@@ -5,6 +5,11 @@ import { SiteHeader } from "@/components/site-header";
 import { getChurchByTenantAndId, getTenantBySlug } from "@/lib/data";
 import { badgeTone, formatPhone, formatWebsite } from "@/lib/utils";
 
+function buildGoogleMapsDirectionsUrl(address: string, city: string, state: string, zip: string) {
+  const destination = [address, `${city}, ${state} ${zip}`].filter(Boolean).join(", ");
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+}
+
 export default async function ChurchProfilePage({
   params
 }: {
@@ -17,6 +22,8 @@ export default async function ChurchProfilePage({
   if (!tenant || !church) {
     notFound();
   }
+
+  const directionsUrl = buildGoogleMapsDirectionsUrl(church.address, church.city, church.state, church.zip);
 
   return (
     <>
@@ -45,16 +52,32 @@ export default async function ChurchProfilePage({
               <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white">
                 District Dashboard
               </Link>
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+              >
+                Get Directions
+              </a>
             </div>
           </div>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
             <div className="space-y-5">
               <ProfileCard title="Church Information">
-                <p>{church.address}</p>
-                <p>
-                  {church.city}, {church.state} {church.zip}
-                </p>
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
+                >
+                  <p>{church.address}</p>
+                  <p>
+                    {church.city}, {church.state} {church.zip}
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
+                </a>
                 <p>{formatPhone(church.phone)}</p>
                 <p>{church.email || "Email not listed"}</p>
                 <p>{formatWebsite(church.website)}</p>
@@ -67,6 +90,14 @@ export default async function ChurchProfilePage({
                 <p className="text-muted">
                   Production Mapbox clustered view can center on this church and reuse the same record shape.
                 </p>
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                >
+                  Open Directions
+                </a>
               </ProfileCard>
             </div>
 

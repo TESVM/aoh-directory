@@ -41,6 +41,11 @@ const emptyForm: FormState = {
   website: ""
 };
 
+function buildGoogleMapsDirectionsUrl(church: Pick<Church, "address" | "city" | "state" | "zip" | "name">) {
+  const destination = [church.address, `${church.city}, ${church.state} ${church.zip}`].filter(Boolean).join(", ");
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&destination_place_id=&travelmode=driving`;
+}
+
 export function DirectoryShell({ tenant, churches, submissions }: DirectoryShellProps) {
   const [tab, setTab] = useState<"directory" | "register">("directory");
   const [query, setQuery] = useState("");
@@ -255,10 +260,18 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <InfoCard label="Address">
-                      <p>{selectedChurch.address}</p>
-                      <p>
-                        {selectedChurch.city}, {selectedChurch.state} {selectedChurch.zip}
-                      </p>
+                      <a
+                        href={buildGoogleMapsDirectionsUrl(selectedChurch)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
+                      >
+                        <p>{selectedChurch.address}</p>
+                        <p>
+                          {selectedChurch.city}, {selectedChurch.state} {selectedChurch.zip}
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
+                      </a>
                     </InfoCard>
                     <InfoCard label="Contact">
                       <p>{formatPhone(selectedChurch.phone)}</p>
@@ -276,6 +289,14 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                       <p className="text-sm text-muted">
                         Mapbox cluster view plugs into this record shape without changing the route model.
                       </p>
+                      <a
+                        href={buildGoogleMapsDirectionsUrl(selectedChurch)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                      >
+                        Get Directions
+                      </a>
                     </InfoCard>
                   </div>
                 </div>
