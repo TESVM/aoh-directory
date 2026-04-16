@@ -44,6 +44,8 @@ export const seededChurches: Church[] = [
     source: "Headquarters roster",
     lastUpdated: "2026-04-15",
     location: { lat: 30.6832, lng: -88.0721 },
+    serviceHours: ["Sunday Worship - 10:00 AM", "Wednesday Bible Study - 7:00 PM"],
+    onlineWorshipUrl: "https://greaterhopetemple.example.org/live",
     ministries: ["Youth", "Prayer", "Outreach"],
     notes: "Regional host church for district meetings."
   },
@@ -65,6 +67,8 @@ export const seededChurches: Church[] = [
     source: "District council listing",
     lastUpdated: "2026-04-12",
     location: { lat: 32.3007, lng: -90.1848 },
+    serviceHours: ["Sunday Morning Worship - 11:00 AM", "Tuesday Prayer - 6:30 PM"],
+    onlineWorshipUrl: "https://newlighttabernacle.example.org/watch",
     ministries: ["Women", "Bible Study"],
     notes: "Strong district leadership involvement."
   },
@@ -86,6 +90,7 @@ export const seededChurches: Church[] = [
     source: "Public website",
     lastUpdated: "2026-03-29",
     location: { lat: 29.652, lng: -95.3659 },
+    serviceHours: ["Sunday Celebration - 9:30 AM"],
     ministries: ["Outreach", "Music", "Young Adults"]
   },
   {
@@ -106,6 +111,7 @@ export const seededChurches: Church[] = [
     source: "Regional district office",
     lastUpdated: "2026-04-02",
     location: { lat: 30.2217, lng: -92.0198 },
+    serviceHours: ["Sunday Worship - 10:30 AM", "Thursday Prayer - 7:00 PM"],
     ministries: ["Prayer", "Children", "Community Care"]
   },
   {
@@ -126,6 +132,7 @@ export const seededChurches: Church[] = [
     source: "Community submission",
     lastUpdated: "2026-04-10",
     location: { lat: 39.3091, lng: -76.6403 },
+    onlineWorshipUrl: "https://graceapostolic.example.org/live",
     ministries: ["Outreach", "Youth"]
   },
   {
@@ -146,6 +153,8 @@ export const seededChurches: Church[] = [
     source: "Church website",
     lastUpdated: "2026-04-09",
     location: { lat: 40.6782, lng: -73.9101 },
+    serviceHours: ["Sunday Worship - 10:00 AM", "Friday Night Service - 7:30 PM"],
+    onlineWorshipUrl: "https://mountvictory.example.org/stream",
     ministries: ["Music", "Media", "Women"]
   },
   {
@@ -166,6 +175,7 @@ export const seededChurches: Church[] = [
     source: "District handout",
     lastUpdated: "2026-03-18",
     location: { lat: 28.5807, lng: -81.4003 },
+    serviceHours: ["Sunday Worship - 11:30 AM"],
     ministries: ["Prayer", "Young Adults"]
   },
   {
@@ -212,6 +222,7 @@ export const seededSubmissions: Submission[] = [
       source: "Public submission",
       lastUpdated: "2026-04-14",
       location: { lat: 33.4801, lng: -86.851 },
+      serviceHours: [],
       ministries: ["Youth", "Outreach"],
       notes: "Submitted through public registration form."
     }
@@ -237,6 +248,7 @@ export const seededSubmissions: Submission[] = [
       source: "Public submission",
       lastUpdated: "2026-04-13",
       location: { lat: 29.9511, lng: -90.0796 },
+      serviceHours: [],
       ministries: ["Prayer", "Relief"],
       notes: "Potential duplicate address not yet reviewed."
     }

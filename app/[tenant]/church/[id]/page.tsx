@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { PrayerRequestPanel } from "@/components/prayer-request-panel";
 import { ShareChurchButton } from "@/components/share-church-button";
 import { SiteHeader } from "@/components/site-header";
 import { getChurchByTenantAndId, getTenantBySlug } from "@/lib/data";
@@ -104,6 +105,33 @@ export default async function ChurchProfilePage({
                 <p>{formatWebsite(church.website)}</p>
               </ProfileCard>
 
+              <ProfileCard title="Service Hours">
+                {church.serviceHours?.length ? (
+                  <ul className="space-y-2">
+                    {church.serviceHours.map((time) => (
+                      <li key={time}>{time}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Call the church for current service times.</p>
+                )}
+              </ProfileCard>
+
+              <ProfileCard title="Online Worship">
+                {church.onlineWorshipUrl ? (
+                  <a
+                    href={toWebsiteHref(church.onlineWorshipUrl) || undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                  >
+                    Join Online Worship
+                  </a>
+                ) : (
+                  <p>Online worship is not listed for this church.</p>
+                )}
+              </ProfileCard>
+
               <ProfileCard title="Map Preview">
                 <p>
                   Coordinates: {church.location.lat}, {church.location.lng}
@@ -129,13 +157,20 @@ export default async function ChurchProfilePage({
                 <p>Status: {church.status}</p>
               </ProfileCard>
               <ProfileCard title="Ministries">
-                <div className="flex flex-wrap gap-2">
-                  {church.ministries.map((ministry) => (
-                    <span key={ministry} className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-900">
-                      {ministry}
-                    </span>
-                  ))}
-                </div>
+                {church.ministries.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {church.ministries.map((ministry) => (
+                      <span key={ministry} className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-900">
+                        {ministry}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Ministry groups are not listed yet.</p>
+                )}
+              </ProfileCard>
+              <ProfileCard title="Prayer Request">
+                <PrayerRequestPanel tenantSlug={tenant.slug} churchId={church.id} churchName={church.name} />
               </ProfileCard>
             </div>
           </div>

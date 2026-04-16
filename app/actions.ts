@@ -6,6 +6,7 @@ import {
   findPotentialDuplicates,
   getChurchByTenantAndId,
   getChurchesByTenant,
+  getPrayerRequestsByTenant,
   getSubmissionByTenantAndId,
   getSubmissionsByTenant,
   getTenantBySlug,
@@ -23,6 +24,11 @@ export type CommunicationResult = {
   message: string;
   emailCount?: number;
   smsCount?: number;
+};
+
+export type PrayerRequestResult = {
+  ok: boolean;
+  message: string;
 };
 
 type SubmissionPayload = {
@@ -45,6 +51,15 @@ type ChurchPayload = SubmissionPayload & {
   notes: string;
 };
 
+type PrayerPayload = {
+  churchId?: string;
+  churchName?: string;
+  requesterName: string;
+  requesterEmail?: string;
+  requesterPhone?: string;
+  request: string;
+};
+
 function normalizePhoneNumber(phone?: string) {
   if (!phone) return null;
   const digits = phone.replace(/\D/g, "");
@@ -55,6 +70,12 @@ function normalizePhoneNumber(phone?: string) {
 
 function unique<T>(values: T[]) {
   return [...new Set(values)];
+}
+
+function assertPrayerPayload(payload: PrayerPayload) {
+  if (!payload.requesterName || !payload.request) {
+    throw new Error("Your name and prayer request are required.");
+  }
 }
 
 function assertFields(payload: SubmissionPayload) {
@@ -430,6 +451,49 @@ export async function createManagedUserAction(formData: FormData) {
   });
 
   revalidatePath(`/${tenantSlug}/admin`);
+}
+
+export async function submitPrayerRequestAction(
+  tenantSlug: string,
+  payload: PrayerPayload
+): Promise<PrayerRequestResult> {
+  const tenant = await getTenantBySlug(tenantSlug);
+  const db = getFirebaseAdminDb();
+
+  if (!tenant || !db) {
+    return {
+      ok: false,
+      message: "Prayer requests are not configured yet."
+    };
+  }
+
+  try {
+    assertPrayerPayload(payload);
+
+    await db.collection("prayer_requests").add({
+      tenant_id: tenant.id,
+      church_id: payload.churchId || null,
+      church_name: payload.churchName || null,
+      requester_name: payload.requesterName,
+      requester_email: payload.requesterEmail || null,
+      requester_phone: payload.requesterPhone || null,
+      request: payload.request,
+      created_at: new Date().toISOString(),
+      status: "new"
+    });
+
+    revalidatePath(`/${tenantSlug}/admin`);
+
+    return {
+      ok: true,
+      message: "Your prayer request has been sent."
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to send your prayer request."
+    };
+  }
 }
 
 export async function sendBroadcastMessageAction(

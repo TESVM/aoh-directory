@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createManagedUserAction, reviewSubmissionAction } from "@/app/actions";
 import { CommunicationsCenter } from "@/components/communications-center";
-import { Church, Submission, UserRecord, ViewerContext } from "@/lib/types";
+import { Church, PrayerRequest, Submission, UserRecord, ViewerContext } from "@/lib/types";
 import { badgeTone } from "@/lib/utils";
 
 export function AdminDashboard({
@@ -9,13 +9,15 @@ export function AdminDashboard({
   churches,
   submissions,
   duplicateMap,
-  users
+  users,
+  prayerRequests
 }: {
   viewer: ViewerContext;
   churches: Church[];
   submissions: Submission[];
   duplicateMap: Record<string, Church[]>;
   users: UserRecord[];
+  prayerRequests: PrayerRequest[];
 }) {
   if (viewer.role === "public") {
     return (
@@ -154,6 +156,51 @@ export function AdminDashboard({
           tenantSlug={viewer.tenant.slug}
           districts={uniqueDistricts(churches)}
         />
+      ) : null}
+
+      {viewer.role === "admin" ? (
+        <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Prayer Requests</p>
+              <h2 className="mt-3 font-serif text-3xl text-ink">Recent requests</h2>
+            </div>
+            <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
+              {prayerRequests.length} total
+            </span>
+          </div>
+          <div className="mt-5 space-y-4">
+            {prayerRequests.length ? (
+              prayerRequests
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .slice(0, 8)
+                .map((prayer) => (
+                  <div key={prayer.id} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-ink">{prayer.requesterName}</h3>
+                        <p className="text-sm text-muted">
+                          {prayer.churchName || "General request"} • {prayer.createdAt}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-900">
+                        {prayer.status}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-ink">{prayer.request}</p>
+                    <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted">
+                      {prayer.requesterEmail ? <span>{prayer.requesterEmail}</span> : null}
+                      {prayer.requesterPhone ? <span>{prayer.requesterPhone}</span> : null}
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+                No prayer requests have been submitted yet.
+              </div>
+            )}
+          </div>
+        </section>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-4">

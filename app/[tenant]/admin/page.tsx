@@ -2,7 +2,7 @@ import { requireTenantRole } from "@/lib/auth";
 import { AdminDashboard } from "@/components/admin-dashboard";
 import { SiteHeader } from "@/components/site-header";
 import { SetupBanner } from "@/components/setup-banner";
-import { findPotentialDuplicates, getScopedChurches, getScopedSubmissions, getUsersByTenant, getViewerContext } from "@/lib/data";
+import { findPotentialDuplicates, getPrayerRequestsByTenant, getScopedChurches, getScopedSubmissions, getUsersByTenant, getViewerContext } from "@/lib/data";
 
 export default async function AdminPage({
   params
@@ -16,10 +16,11 @@ export default async function AdminPage({
     return null;
   }
 
-  const [churches, submissions, users] = await Promise.all([
+  const [churches, submissions, users, prayerRequests] = await Promise.all([
     getScopedChurches(viewer),
     getScopedSubmissions(viewer),
-    viewer.role === "admin" ? getUsersByTenant(viewer.tenant.slug) : Promise.resolve([])
+    viewer.role === "admin" ? getUsersByTenant(viewer.tenant.slug) : Promise.resolve([]),
+    viewer.role === "admin" ? getPrayerRequestsByTenant(viewer.tenant.slug) : Promise.resolve([])
   ]);
   const duplicateEntries = await Promise.all(
     submissions.map(async (submission) => [submission.id, await findPotentialDuplicates(viewer.tenant.slug, submission.id)] as const)
@@ -40,7 +41,14 @@ export default async function AdminPage({
           </p>
         </div>
 
-        <AdminDashboard viewer={viewer} churches={churches} submissions={submissions} duplicateMap={duplicateMap} users={users} />
+        <AdminDashboard
+          viewer={viewer}
+          churches={churches}
+          submissions={submissions}
+          duplicateMap={duplicateMap}
+          users={users}
+          prayerRequests={prayerRequests}
+        />
       </main>
     </>
   );

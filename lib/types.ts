@@ -34,6 +34,8 @@ export type Church = {
     lat: number;
     lng: number;
   };
+  serviceHours?: string[];
+  onlineWorshipUrl?: string;
   ministries: string[];
   notes?: string;
 };
@@ -45,6 +47,19 @@ export type Submission = {
   data: Omit<Church, "id" | "tenantId">;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
+};
+
+export type PrayerRequest = {
+  id: string;
+  tenantId: string;
+  churchId?: string;
+  churchName?: string;
+  requesterName: string;
+  requesterEmail?: string;
+  requesterPhone?: string;
+  request: string;
+  createdAt: string;
+  status: "new" | "reviewed";
 };
 
 export type UserRecord = {

@@ -1,6 +1,6 @@
 import { QueryDocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { cookies } from "next/headers";
-import { Church, Submission, Tenant, UserRecord, ViewerContext } from "@/lib/types";
+import { Church, PrayerRequest, Submission, Tenant, UserRecord, ViewerContext } from "@/lib/types";
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import { seededChurches, seededSubmissions, seededTenants, seededUsers } from "@/lib/seed";
 
@@ -24,6 +24,8 @@ type FirestoreChurch = {
     lat: number;
     lng: number;
   };
+  service_hours?: string[];
+  online_worship_url?: string;
   ministries?: string[];
   notes?: string;
 };
@@ -45,6 +47,18 @@ type FirestoreTenant = {
     accent: string;
     logoText: string;
   };
+};
+
+type FirestorePrayerRequest = {
+  tenant_id: string;
+  church_id?: string;
+  church_name?: string;
+  requester_name: string;
+  requester_email?: string;
+  requester_phone?: string;
+  request: string;
+  created_at?: string | Timestamp;
+  status: "new" | "reviewed";
 };
 
 type FirestoreUser = {
@@ -82,6 +96,8 @@ function mapChurchDoc(doc: QueryDocumentSnapshot<FirestoreChurch>): Church {
     source: data.source ?? "Firestore",
     lastUpdated: normalizeDate(data.last_updated),
     location: data.location ?? { lat: 0, lng: 0 },
+    serviceHours: data.service_hours ?? [],
+    onlineWorshipUrl: data.online_worship_url,
     ministries: data.ministries ?? [],
     notes: data.notes
   };
@@ -124,6 +140,22 @@ function mapTenantDoc(id: string, data: FirestoreTenant): Tenant {
     slug: data.slug,
     tagline: data.tagline,
     branding: data.branding
+  };
+}
+
+function mapPrayerRequestDoc(doc: QueryDocumentSnapshot<FirestorePrayerRequest>, tenantId: string): PrayerRequest {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    tenantId,
+    churchId: data.church_id,
+    churchName: data.church_name,
+    requesterName: data.requester_name,
+    requesterEmail: data.requester_email,
+    requesterPhone: data.requester_phone,
+    request: data.request,
+    createdAt: normalizeDate(data.created_at),
+    status: data.status
   };
 }
 
@@ -256,6 +288,21 @@ export async function getDistrictStats(tenantSlug: string, districtId: string) {
     pending: districtChurches.filter((church) => church.status !== "verified").length,
     churches: districtChurches
   };
+}
+
+export async function getPrayerRequestsByTenant(tenantSlug: string) {
+  const tenant = await getTenantBySlug(tenantSlug);
+  if (!tenant) return [];
+
+  const db = getFirebaseAdminDb();
+  if (!db) return [];
+
+  try {
+    const snapshot = await db.collection("prayer_requests").where("tenant_id", "==", tenant.id).get();
+    return snapshot.docs.map((doc) => mapPrayerRequestDoc(doc as QueryDocumentSnapshot<FirestorePrayerRequest>, tenant.id));
+  } catch {
+    return [];
+  }
 }
 
 export async function getCurrentUserRecord() {
