@@ -14,7 +14,7 @@ html {
 
 body {
   min-height: 100vh;
-  background: #f4efe4;
+  background: #ffffff;
 }
 
 a {
@@ -29,5 +29,5 @@ textarea {
 }
 
 ::selection {
-  background: rgba(214, 173, 88, 0.28);
+  background: rgba(75, 31, 111, 0.18);
 }
