@@ -127,6 +127,8 @@ function mapSubmissionDoc(doc: QueryDocumentSnapshot<FirestoreSubmission>, tenan
       source: data.data.source ?? "Submission",
       lastUpdated: normalizeDate(data.data.last_updated),
       location: data.data.location ?? { lat: 0, lng: 0 },
+      serviceHours: data.data.service_hours ?? [],
+      onlineWorshipUrl: data.data.online_worship_url,
       ministries: data.data.ministries ?? [],
       notes: data.data.notes
     }

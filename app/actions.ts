@@ -46,6 +46,8 @@ type SubmissionPayload = {
 };
 
 type ChurchPayload = SubmissionPayload & {
+  serviceHours: string[];
+  onlineWorshipUrl: string;
   status: "verified" | "pending" | "submitted";
   source: string;
   notes: string;
@@ -70,6 +72,13 @@ function normalizePhoneNumber(phone?: string) {
 
 function unique<T>(values: T[]) {
   return [...new Set(values)];
+}
+
+function parseMultilineList(value: FormDataEntryValue | null) {
+  return String(value || "")
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function assertPrayerPayload(payload: PrayerPayload) {
@@ -97,6 +106,8 @@ function readChurchPayload(formData: FormData): ChurchPayload {
     phone: String(formData.get("phone") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     website: String(formData.get("website") || "").trim(),
+    serviceHours: parseMultilineList(formData.get("serviceHours")),
+    onlineWorshipUrl: String(formData.get("onlineWorshipUrl") || "").trim(),
     status: (String(formData.get("status") || "pending").trim() as ChurchPayload["status"]),
     source: String(formData.get("source") || "").trim() || "Admin update",
     notes: String(formData.get("notes") || "").trim()
@@ -173,6 +184,8 @@ export async function submitChurchSubmissionAction(
         source: "Public submission",
         last_updated: new Date().toISOString().slice(0, 10),
         location: { lat: 0, lng: 0 },
+        service_hours: [],
+        online_worship_url: "",
         ministries: []
       }
     });
@@ -248,6 +261,8 @@ export async function reviewSubmissionAction(formData: FormData) {
       source: "Approved submission",
       last_updated: new Date().toISOString().slice(0, 10),
       location: submission.data.location,
+      service_hours: submission.data.serviceHours,
+      online_worship_url: submission.data.onlineWorshipUrl,
       ministries: submission.data.ministries,
       notes: submission.data.notes
     });
@@ -306,6 +321,8 @@ export async function updateChurchAction(formData: FormData) {
     phone: payload.phone,
     email: payload.email,
     website: payload.website,
+    service_hours: payload.serviceHours,
+    online_worship_url: payload.onlineWorshipUrl,
     status: payload.status,
     source: payload.source,
     notes: payload.notes,
@@ -360,6 +377,8 @@ export async function updateSubmissionAction(formData: FormData) {
       phone: payload.phone,
       email: payload.email,
       website: payload.website,
+      service_hours: payload.serviceHours,
+      online_worship_url: payload.onlineWorshipUrl,
       status: payload.status,
       source: payload.source,
       notes: payload.notes,
@@ -481,6 +500,57 @@ export async function submitPrayerRequestAction(
       created_at: new Date().toISOString(),
       status: "new"
     });
+
+    const sendGridApiKey = process.env.SENDGRID_API_KEY;
+    const sendGridFromEmail = process.env.SENDGRID_FROM_EMAIL;
+
+    if (sendGridApiKey && sendGridFromEmail) {
+      const users = await getUsersByTenant(tenantSlug);
+      const adminEmails = users
+        .filter((user) => user.role === "admin")
+        .map((user) => user.email)
+        .filter(Boolean);
+      const churchEmail = payload.churchId
+        ? (await getChurchByTenantAndId(tenantSlug, payload.churchId))?.email
+        : null;
+      const recipients = unique([...adminEmails, ...(churchEmail ? [churchEmail] : [])]);
+
+      if (recipients.length) {
+        await fetch("https://api.sendgrid.com/v3/mail/send", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${sendGridApiKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            personalizations: [
+              {
+                to: recipients.map((email) => ({ email }))
+              }
+            ],
+            from: { email: sendGridFromEmail, name: `${tenant.name} Prayer Requests` },
+            subject: payload.churchName
+              ? `New prayer request for ${payload.churchName}`
+              : `New prayer request from ${tenant.name}`,
+            content: [
+              {
+                type: "text/plain",
+                value: [
+                  `Requester: ${payload.requesterName}`,
+                  payload.requesterEmail ? `Email: ${payload.requesterEmail}` : null,
+                  payload.requesterPhone ? `Phone: ${payload.requesterPhone}` : null,
+                  payload.churchName ? `Church: ${payload.churchName}` : null,
+                  "",
+                  payload.request
+                ]
+                  .filter(Boolean)
+                  .join("\n")
+              }
+            ]
+          })
+        });
+      }
+    }
 
     revalidatePath(`/${tenantSlug}/admin`);
 

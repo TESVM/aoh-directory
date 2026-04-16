@@ -13,6 +13,8 @@ type RecordValues = Pick<
   | "phone"
   | "email"
   | "website"
+  | "serviceHours"
+  | "onlineWorshipUrl"
   | "status"
   | "source"
   | "notes"
@@ -60,6 +62,7 @@ export function AdminRecordForm({
         <Field label="Phone" name="phone" defaultValue={values.phone} />
         <Field label="Email" name="email" defaultValue={values.email} type="email" />
         <Field label="Website" name="website" defaultValue={values.website} />
+        <Field label="Online worship link" name="onlineWorshipUrl" defaultValue={values.onlineWorshipUrl} className="md:col-span-2" />
         <div className="space-y-2">
           <label htmlFor="status" className="text-sm font-medium text-ink">
             Status
@@ -75,6 +78,14 @@ export function AdminRecordForm({
             <option value="submitted">Submitted</option>
           </select>
         </div>
+        <TextArea
+          label="Service hours"
+          name="serviceHours"
+          defaultValue={(values.serviceHours || []).join("\n")}
+          className="md:col-span-2"
+          rows={4}
+          helpText="Put each service time on its own line."
+        />
         <Field label="Source" name="source" defaultValue={values.source} className="md:col-span-2" />
         <TextArea label="Notes" name="notes" defaultValue={values.notes} className="md:col-span-2" />
       </div>
@@ -131,12 +142,16 @@ function TextArea({
   label,
   name,
   defaultValue,
-  className = ""
+  className = "",
+  rows = 5,
+  helpText
 }: {
   label: string;
-  name: "notes";
+  name: "notes" | "serviceHours";
   defaultValue?: string;
   className?: string;
+  rows?: number;
+  helpText?: string;
 }) {
   return (
     <div className={`space-y-2 ${className}`.trim()}>
@@ -147,9 +162,10 @@ function TextArea({
         id={name}
         name={name}
         defaultValue={defaultValue ?? ""}
-        rows={5}
+        rows={rows}
         className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none ring-0 transition focus:border-brand-700"
       />
+      {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}
     </div>
   );
 }
