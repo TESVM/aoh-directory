@@ -21,7 +21,7 @@ export function AdminDashboard({
 }) {
   if (viewer.role === "public") {
     return (
-      <div className="rounded-[1.75rem] border border-claret/20 bg-claret/5 p-8">
+      <div className="rounded-[2rem] border border-claret/20 bg-claret/5 p-8">
         <h1 className="font-serif text-3xl text-ink">Access restricted</h1>
         <p className="mt-3 max-w-2xl text-muted">
           Admin routes require an authenticated Firebase session and a matching Firestore user record.
@@ -37,7 +37,7 @@ export function AdminDashboard({
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+      <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Simple Back Office</p>
         <h2 className="mt-3 font-serif text-3xl text-ink">Choose what you want to do</h2>
         <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
@@ -66,7 +66,7 @@ export function AdminDashboard({
 
       {viewer.role === "admin" ? (
         <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+          <div className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">People Who Can Edit</p>
             <h2 className="mt-3 font-serif text-3xl text-ink">Add a person</h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
@@ -124,12 +124,12 @@ export function AdminDashboard({
             </form>
           </div>
 
-          <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+          <div className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Current Editors</p>
             <h2 className="mt-3 font-serif text-3xl text-ink">Who already has access</h2>
             <div className="mt-5 space-y-4">
               {users.map((account) => (
-                <div key={account.uid} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                <div key={account.uid} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-semibold text-ink">{account.name}</h3>
@@ -159,7 +159,7 @@ export function AdminDashboard({
       ) : null}
 
       {viewer.role === "admin" ? (
-        <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Prayer Requests</p>
@@ -175,7 +175,7 @@ export function AdminDashboard({
                 .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
                 .slice(0, 8)
                 .map((prayer) => (
-                  <div key={prayer.id} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                  <div key={prayer.id} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <h3 className="text-lg font-semibold text-ink">{prayer.requesterName}</h3>
@@ -195,7 +195,7 @@ export function AdminDashboard({
                   </div>
                 ))
             ) : (
-              <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+              <div className="rounded-[1.4rem] border border-line/80 bg-surface p-5 text-sm text-muted">
                 No prayer requests have been submitted yet.
               </div>
             )}
@@ -211,7 +211,7 @@ export function AdminDashboard({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">New Churches Waiting</p>
@@ -223,14 +223,14 @@ export function AdminDashboard({
           </div>
           <div className="mt-5 space-y-4">
             {pendingSubmissions.length === 0 ? (
-              <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+              <div className="rounded-[1.4rem] border border-line/80 bg-surface p-5 text-sm text-muted">
                 There are no new church submissions waiting right now.
               </div>
             ) : null}
             {pendingSubmissions.map((submission) => {
               const duplicates = duplicateMap[submission.id] ?? [];
               return (
-                <div key={submission.id} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                <div key={submission.id} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="font-serif text-2xl text-ink">{submission.data.name}</h2>
@@ -295,7 +295,7 @@ export function AdminDashboard({
           </div>
         </section>
 
-        <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Live Directory Listings</p>
@@ -307,7 +307,7 @@ export function AdminDashboard({
           </div>
           <div className="mt-5 space-y-4">
             {recentlyUpdated.map((church) => (
-              <div key={church.id} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+              <div key={church.id} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h4 className="font-serif text-2xl text-ink">{church.name}</h4>
@@ -355,7 +355,7 @@ export function AdminDashboard({
 
 function Metric({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-line/80 bg-white p-5 shadow-card">
+    <div className="rounded-[1.7rem] border border-line/80 bg-white p-5 shadow-card">
       <p className="text-3xl font-semibold text-ink">{value}</p>
       <p className="mt-1 text-sm text-muted">{label}</p>
     </div>
@@ -374,7 +374,7 @@ function QuickAction({
   href?: `/${string}`;
 }) {
   const content = (
-    <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5">
+    <div className="rounded-[1.4rem] border border-line/80 bg-surface p-5">
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-700">{detail}</p>
       <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-muted">{description}</p>

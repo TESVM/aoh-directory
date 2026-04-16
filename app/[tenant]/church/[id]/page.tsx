@@ -32,60 +32,70 @@ export default async function ChurchProfilePage({
     <>
       <SiteHeader tenant={tenant} />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="rounded-[2rem] border border-line/80 bg-white p-8 shadow-soft">
-          <div className="flex flex-wrap items-start justify-between gap-6 border-b border-line/70 pb-6">
-            <div>
-              <div className="flex flex-wrap gap-2">
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
-                  {church.status}
-                </span>
-                <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-stone-800">
-                  District {church.district}
-                </span>
+        <div className="overflow-hidden rounded-[2.4rem] bg-hero shadow-soft">
+          <div className="border-b border-white/10 px-8 py-10 text-white">
+            <div className="flex flex-wrap items-start justify-between gap-6">
+              <div className="max-w-3xl">
+                <div className="flex flex-wrap gap-2">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
+                    {church.status}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
+                    District {church.district}
+                  </span>
+                </div>
+                <h1 className="mt-5 font-serif text-5xl leading-tight sm:text-6xl">{church.name}</h1>
+                <p className="mt-4 text-xl text-brand-100">
+                  {church.pastorTitle} {church.pastorName}
+                </p>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-brand-100">
+                  Find service times, get directions, join online worship, and connect with the ministry life of this church.
+                </p>
               </div>
-              <h1 className="mt-4 font-serif text-5xl text-ink">{church.name}</h1>
-              <p className="mt-3 text-xl text-muted">
-                {church.pastorTitle} {church.pastorName}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href={`/${tenant.slug}`} className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink">
-                Back To Directory
-              </Link>
-              <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white">
-                District Dashboard
-              </Link>
-              <a
-                href={directionsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-              >
-                Get Directions
-              </a>
-              {toTelHref(church.phone) ? (
-                <a
-                  href={toTelHref(church.phone) || undefined}
-                  className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-                >
-                  Call Church
-                </a>
-              ) : null}
-              {toWebsiteHref(church.website) ? (
-                <a
-                  href={toWebsiteHref(church.website) || undefined}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-                >
-                  Visit Website
-                </a>
-              ) : null}
-              <ShareChurchButton title={church.name} url={publicProfileUrl} />
+              <div className="rounded-[1.6rem] border border-white/10 bg-white/8 p-5 backdrop-blur">
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-100">Quick Actions</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href={`/${tenant.slug}`} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100">
+                    Back To Directory
+                  </Link>
+                  <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-pine">
+                    District Dashboard
+                  </Link>
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                  >
+                    Get Directions
+                  </a>
+                  {toTelHref(church.phone) ? (
+                    <a
+                      href={toTelHref(church.phone) || undefined}
+                      className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                    >
+                      Call Church
+                    </a>
+                  ) : null}
+                  {toWebsiteHref(church.website) ? (
+                    <a
+                      href={toWebsiteHref(church.website) || undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                    >
+                      Visit Website
+                    </a>
+                  ) : null}
+                  <div className="text-ink">
+                    <ShareChurchButton title={church.name} url={publicProfileUrl} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+          <div className="grid gap-5 bg-white p-8 lg:grid-cols-[1fr_0.9fr]">
             <div className="space-y-5">
               <ProfileCard title="Church Information">
                 <a
@@ -182,7 +192,7 @@ export default async function ChurchProfilePage({
 
 function ProfileCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-[1.5rem] border border-line/80 bg-surface p-6">
+    <section className="rounded-[1.7rem] border border-line/80 bg-surface p-6 shadow-card">
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">{title}</p>
       <div className="mt-4 space-y-2 text-base leading-7 text-ink">{children}</div>
     </section>
