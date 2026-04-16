@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { ShareChurchButton } from "@/components/share-church-button";
 import { SiteHeader } from "@/components/site-header";
 import { getChurchByTenantAndId, getTenantBySlug } from "@/lib/data";
-import { badgeTone, formatPhone, formatWebsite } from "@/lib/utils";
+import { badgeTone, formatPhone, formatWebsite, toTelHref, toWebsiteHref } from "@/lib/utils";
 
 function buildGoogleMapsDirectionsUrl(address: string, city: string, state: string, zip: string) {
   const destination = [address, `${city}, ${state} ${zip}`].filter(Boolean).join(", ");
@@ -24,6 +25,7 @@ export default async function ChurchProfilePage({
   }
 
   const directionsUrl = buildGoogleMapsDirectionsUrl(church.address, church.city, church.state, church.zip);
+  const publicProfileUrl = `/${tenant.slug}/church/${church.id}`;
 
   return (
     <>
@@ -60,6 +62,25 @@ export default async function ChurchProfilePage({
               >
                 Get Directions
               </a>
+              {toTelHref(church.phone) ? (
+                <a
+                  href={toTelHref(church.phone) || undefined}
+                  className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                >
+                  Call Church
+                </a>
+              ) : null}
+              {toWebsiteHref(church.website) ? (
+                <a
+                  href={toWebsiteHref(church.website) || undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                >
+                  Visit Website
+                </a>
+              ) : null}
+              <ShareChurchButton title={church.name} url={publicProfileUrl} />
             </div>
           </div>
 

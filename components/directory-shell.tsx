@@ -4,8 +4,9 @@ import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
 import { useMemo, useState, useTransition } from "react";
 import { submitChurchSubmissionAction } from "@/app/actions";
+import { ShareChurchButton } from "@/components/share-church-button";
 import { Church, Submission, Tenant } from "@/lib/types";
-import { badgeTone, formatPhone, formatWebsite } from "@/lib/utils";
+import { badgeTone, formatPhone, formatWebsite, toTelHref, toWebsiteHref } from "@/lib/utils";
 
 type DirectoryShellProps = {
   tenant: Tenant;
@@ -44,6 +45,10 @@ const emptyForm: FormState = {
 function buildGoogleMapsDirectionsUrl(church: Pick<Church, "address" | "city" | "state" | "zip" | "name">) {
   const destination = [church.address, `${church.city}, ${church.state} ${church.zip}`].filter(Boolean).join(", ");
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&destination_place_id=&travelmode=driving`;
+}
+
+function buildChurchProfileUrl(tenantSlug: string, churchId: string) {
+  return `/${tenantSlug}/church/${churchId}`;
 }
 
 export function DirectoryShell({ tenant, churches, submissions }: DirectoryShellProps) {
@@ -245,17 +250,52 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                     <div className="flex flex-wrap gap-3">
                       <Link
                         href={`/${tenant.slug}/church/${selectedChurch.id}`}
+                        prefetch={false}
                         className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white"
                       >
                         Open Profile
                       </Link>
                       <Link
                         href={`/${tenant.slug}/district/${selectedChurch.district}`}
+                        prefetch={false}
                         className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink"
                       >
                         District View
                       </Link>
                     </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href={buildGoogleMapsDirectionsUrl(selectedChurch)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                    >
+                      Get Directions
+                    </a>
+                    {toTelHref(selectedChurch.phone) ? (
+                      <a
+                        href={toTelHref(selectedChurch.phone) || undefined}
+                        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                      >
+                        Call Church
+                      </a>
+                    ) : null}
+                    {toWebsiteHref(selectedChurch.website) ? (
+                      <a
+                        href={toWebsiteHref(selectedChurch.website) || undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                      >
+                        Visit Website
+                      </a>
+                    ) : null}
+                    <ShareChurchButton
+                      title={selectedChurch.name}
+                      url={buildChurchProfileUrl(tenant.slug, selectedChurch.id)}
+                    />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
