@@ -2,7 +2,7 @@ import { requireTenantRole } from "@/lib/auth";
 import { AdminDashboard } from "@/components/admin-dashboard";
 import { SiteHeader } from "@/components/site-header";
 import { SetupBanner } from "@/components/setup-banner";
-import { findPotentialDuplicates, getScopedChurches, getScopedSubmissions, getViewerContext } from "@/lib/data";
+import { findPotentialDuplicates, getScopedChurches, getScopedSubmissions, getUsersByTenant, getViewerContext } from "@/lib/data";
 
 export default async function AdminPage({
   params
@@ -10,13 +10,17 @@ export default async function AdminPage({
   params: Promise<{ tenant: string }>;
 }) {
   const { tenant: tenantSlug } = await params;
-  await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
   const viewer = await getViewerContext(tenantSlug);
   if (!viewer || viewer.role === "public") {
     return null;
   }
 
-  const [churches, submissions] = await Promise.all([getScopedChurches(viewer), getScopedSubmissions(viewer)]);
+  const [churches, submissions, users] = await Promise.all([
+    getScopedChurches(viewer),
+    getScopedSubmissions(viewer),
+    viewer.role === "admin" ? getUsersByTenant(viewer.tenant.slug) : Promise.resolve([])
+  ]);
   const duplicateEntries = await Promise.all(
     submissions.map(async (submission) => [submission.id, await findPotentialDuplicates(viewer.tenant.slug, submission.id)] as const)
   );
@@ -29,15 +33,14 @@ export default async function AdminPage({
         <SetupBanner />
         <div className="mb-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Admin Dashboard</p>
-          <h1 className="mt-3 font-serif text-4xl text-ink">Moderation, publishing, and scoped access</h1>
+          <h1 className="mt-3 font-serif text-4xl text-ink">Back Office Portal</h1>
           <p className="mt-3 max-w-3xl text-lg leading-8 text-muted">
-            This route now requires a real Firebase session cookie, tenant-scoped Firestore access,
-            and server-side role enforcement. Published churches and queued submissions can now be edited
-            from this back office before they go live.
+            This portal is where the directory staff signs in, reviews churches, fixes records, and assigns
+            editing access to Overseers, Bishops, and Pastors.
           </p>
         </div>
 
-        <AdminDashboard viewer={viewer} churches={churches} submissions={submissions} duplicateMap={duplicateMap} />
+        <AdminDashboard viewer={viewer} churches={churches} submissions={submissions} duplicateMap={duplicateMap} users={users} />
       </main>
     </>
   );

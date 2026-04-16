@@ -18,10 +18,18 @@ service cloud.firestore {
       return hasTenantAccess(tenantId) && userDoc().data.role == "admin";
     }
 
-    function isDistrictLeaderFor(tenantId, districtId) {
+    function isDistrictEditorFor(tenantId, districtId) {
       return hasTenantAccess(tenantId)
-        && userDoc().data.role == "district_leader"
+        && (userDoc().data.role == "district_leader"
+          || userDoc().data.role == "overseer"
+          || userDoc().data.role == "bishop")
         && userDoc().data.district == districtId;
+    }
+
+    function isPastorFor(tenantId, churchId) {
+      return hasTenantAccess(tenantId)
+        && userDoc().data.role == "pastor"
+        && userDoc().data.church_id == churchId;
     }
 
     match /tenants/{tenantId} {
@@ -31,16 +39,19 @@ service cloud.firestore {
 
     match /churches/{churchId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin(request.resource.data.tenant_id)
-        || isDistrictLeaderFor(request.resource.data.tenant_id, request.resource.data.district);
+      allow create: if isAdmin(request.resource.data.tenant_id)
+        || isDistrictEditorFor(request.resource.data.tenant_id, request.resource.data.district);
+      allow update, delete: if isAdmin(resource.data.tenant_id)
+        || isDistrictEditorFor(resource.data.tenant_id, resource.data.district)
+        || isPastorFor(resource.data.tenant_id, churchId);
     }
 
     match /submissions/{submissionId} {
       allow create: if true;
       allow read: if isAdmin(resource.data.tenant_id)
-        || isDistrictLeaderFor(resource.data.tenant_id, resource.data.data.district);
+        || isDistrictEditorFor(resource.data.tenant_id, resource.data.data.district);
       allow update, delete: if isAdmin(resource.data.tenant_id)
-        || isDistrictLeaderFor(resource.data.tenant_id, resource.data.data.district);
+        || isDistrictEditorFor(resource.data.tenant_id, resource.data.data.district);
     }
 
     match /users/{userId} {

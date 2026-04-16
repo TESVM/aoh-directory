@@ -81,8 +81,10 @@ export function AdminRecordForm({
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line/80 pt-6">
         <p className="text-sm text-muted">
-          {viewer.role === "district_leader"
+          {viewer.role === "overseer" || viewer.role === "bishop"
             ? `You can only edit District ${viewer.district} records.`
+            : viewer.role === "pastor"
+              ? "You can only edit the church assigned to your login."
             : "Tenant admin access can edit and publish all district records."}
         </p>
         <button className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white">

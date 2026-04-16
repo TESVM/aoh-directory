@@ -1,18 +1,20 @@
 import Link from "next/link";
-import { reviewSubmissionAction } from "@/app/actions";
-import { Church, Submission, ViewerContext } from "@/lib/types";
+import { createManagedUserAction, reviewSubmissionAction } from "@/app/actions";
+import { Church, Submission, UserRecord, ViewerContext } from "@/lib/types";
 import { badgeTone } from "@/lib/utils";
 
 export function AdminDashboard({
   viewer,
   churches,
   submissions,
-  duplicateMap
+  duplicateMap,
+  users
 }: {
   viewer: ViewerContext;
   churches: Church[];
   submissions: Submission[];
   duplicateMap: Record<string, Church[]>;
+  users: UserRecord[];
 }) {
   if (viewer.role === "public") {
     return (
@@ -59,11 +61,98 @@ export function AdminDashboard({
         </div>
       </section>
 
+      {viewer.role === "admin" ? (
+        <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">People Who Can Edit</p>
+            <h2 className="mt-3 font-serif text-3xl text-ink">Add a person</h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
+              Create an Overseer, Bishop, or Pastor account. Use Overseer or Bishop for district-level editing.
+              Use Pastor when one person should only edit one church.
+            </p>
+
+            <form action={createManagedUserAction} className="mt-6 grid gap-4 md:grid-cols-2">
+              <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
+              <PortalField label="Full name" name="name" required />
+              <PortalField label="Email" name="email" type="email" required />
+              <PortalField label="Temporary password" name="password" required />
+              <div className="space-y-2">
+                <label htmlFor="role" className="text-sm font-medium text-ink">
+                  Access type
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  defaultValue="overseer"
+                  className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none focus:border-brand-700"
+                >
+                  <option value="overseer">Overseer</option>
+                  <option value="bishop">Bishop</option>
+                  <option value="pastor">Pastor</option>
+                </select>
+              </div>
+              <PortalField label="District number" name="district" placeholder="Use for Overseer or Bishop" />
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="churchId" className="text-sm font-medium text-ink">
+                  Church for Pastor accounts
+                </label>
+                <select
+                  id="churchId"
+                  name="churchId"
+                  defaultValue=""
+                  className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none focus:border-brand-700"
+                >
+                  <option value="">Select a church for Pastor</option>
+                  {churches.map((church) => (
+                    <option key={church.id} value={church.id}>
+                      {church.name} - {church.city}, {church.state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2 flex items-center justify-between gap-4 border-t border-line/80 pt-4">
+                <p className="text-sm text-muted">
+                  Temporary passwords can be changed by the person after their first sign-in.
+                </p>
+                <button className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white">
+                  Create Login
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Current Editors</p>
+            <h2 className="mt-3 font-serif text-3xl text-ink">Who already has access</h2>
+            <div className="mt-5 space-y-4">
+              {users.map((account) => (
+                <div key={account.uid} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-ink">{account.name}</h3>
+                      <p className="text-sm text-muted">{account.email}</p>
+                    </div>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">
+                      {roleLabel(account.role)}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm text-muted">
+                    {account.role === "pastor"
+                      ? `Assigned church: ${churches.find((church) => church.id === account.churchId)?.name || "Church not found"}`
+                      : `District: ${account.district || "Not assigned"}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-4">
         <Metric value={String(churches.length)} label="Scoped churches" />
         <Metric value={String(churches.filter((church) => church.status === "verified").length)} label="Verified" />
         <Metric value={String(pendingSubmissions.length)} label="Pending submissions" />
-        <Metric value={viewer.role === "district_leader" ? `District ${viewer.district}` : "All districts"} label="Access scope" />
+        <Metric value={accessScopeLabel(viewer)} label="Access scope" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
@@ -243,4 +332,51 @@ function QuickAction({
       {content}
     </Link>
   );
+}
+
+function PortalField({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  required = false
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={name} className="text-sm font-medium text-ink">
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none focus:border-brand-700"
+      />
+    </div>
+  );
+}
+
+function roleLabel(role: UserRecord["role"]) {
+  if (role === "overseer") return "Overseer";
+  if (role === "bishop") return "Bishop";
+  if (role === "pastor") return "Pastor";
+  return "Admin";
+}
+
+function accessScopeLabel(viewer: ViewerContext) {
+  if (viewer.role === "overseer" || viewer.role === "bishop") {
+    return `District ${viewer.district}`;
+  }
+  if (viewer.role === "pastor") {
+    return "One church";
+  }
+  return "All districts";
 }

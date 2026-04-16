@@ -14,7 +14,7 @@ export default async function AdminSubmissionPage({
   params: Promise<{ tenant: string; id: string }>;
 }) {
   const { tenant: tenantSlug, id } = await params;
-  const { user } = await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  const { user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop"]);
   const viewer = await getViewerContext(tenantSlug);
 
   if (!viewer || viewer.role === "public") {
@@ -26,7 +26,7 @@ export default async function AdminSubmissionPage({
     notFound();
   }
 
-  if (user.role === "district_leader" && user.district !== submission.data.district) {
+  if ((user.role === "overseer" || user.role === "bishop") && user.district !== submission.data.district) {
     redirect(`/${tenantSlug}/admin`);
   }
 

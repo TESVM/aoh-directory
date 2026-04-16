@@ -24,8 +24,9 @@ export async function POST(request: NextRequest) {
           uid: directUserDoc.id,
           ...(directUserDoc.data() as {
             tenant_id: string;
-            role: "admin" | "district_leader";
+            role: "admin" | "district_leader" | "overseer" | "bishop" | "pastor";
             district?: string;
+            church_id?: string;
             name: string;
             email: string;
           }),

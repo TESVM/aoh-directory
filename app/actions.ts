@@ -1,13 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getFirebaseAdminDb } from "@/lib/firebase/admin";
+import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
   findPotentialDuplicates,
   getChurchByTenantAndId,
   getSubmissionByTenantAndId,
   getSubmissionsByTenant,
-  getTenantBySlug
+  getTenantBySlug,
+  getUsersByTenant
 } from "@/lib/data";
 import { requireTenantRole } from "@/lib/auth";
 
@@ -62,11 +63,20 @@ function readChurchPayload(formData: FormData): ChurchPayload {
 }
 
 function assertRoleScopedDistrict(
-  actor: { role: "admin" | "district_leader"; district?: string },
+  actor: { role: "admin" | "overseer" | "bishop" | "pastor"; district?: string },
   district: string
 ) {
-  if (actor.role === "district_leader" && actor.district !== district) {
-    throw new Error("District leaders can only manage churches inside their assigned district.");
+  if ((actor.role === "overseer" || actor.role === "bishop") && actor.district !== district) {
+    throw new Error("Overseers and Bishops can only manage churches inside their assigned district.");
+  }
+}
+
+function assertRoleScopedChurch(
+  actor: { role: "admin" | "overseer" | "bishop" | "pastor"; churchId?: string },
+  churchId: string
+) {
+  if (actor.role === "pastor" && actor.churchId !== churchId) {
+    throw new Error("Pastors can only manage their assigned church.");
   }
 }
 
@@ -146,7 +156,7 @@ export async function reviewSubmissionAction(formData: FormData) {
   const submissionId = String(formData.get("submissionId") || "");
   const decision = String(formData.get("decision") || "");
 
-  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop"]);
   const db = getFirebaseAdminDb();
 
   if (!db) {
@@ -164,8 +174,8 @@ export async function reviewSubmissionAction(formData: FormData) {
     throw new Error("Submission could not be loaded.");
   }
 
-  if (user.role === "district_leader" && user.district !== submission.data.district) {
-    throw new Error("District leaders can only review submissions for their own district.");
+  if ((user.role === "overseer" || user.role === "bishop") && user.district !== submission.data.district) {
+    throw new Error("Overseers and Bishops can only review submissions for their own district.");
   }
 
   if (decision === "reject") {
@@ -226,7 +236,7 @@ export async function updateChurchAction(formData: FormData) {
   const churchId = String(formData.get("churchId") || "");
   const payload = readChurchPayload(formData);
 
-  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
   const db = getFirebaseAdminDb();
 
   if (!db) {
@@ -241,6 +251,7 @@ export async function updateChurchAction(formData: FormData) {
   assertFields(payload);
   assertRoleScopedDistrict(user, currentChurch.district);
   assertRoleScopedDistrict(user, payload.district);
+  assertRoleScopedChurch(user, currentChurch.id);
 
   await db.collection("churches").doc(churchId).update({
     name: payload.name,
@@ -279,7 +290,7 @@ export async function updateSubmissionAction(formData: FormData) {
   const submissionId = String(formData.get("submissionId") || "");
   const payload = readChurchPayload(formData);
 
-  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop"]);
   const db = getFirebaseAdminDb();
 
   if (!db) {
@@ -328,4 +339,75 @@ export async function updateSubmissionAction(formData: FormData) {
   revalidatePath(`/${tenantSlug}`);
   revalidatePath(`/${tenantSlug}/admin`);
   revalidatePath(`/${tenantSlug}/admin/submission/${submissionId}`);
+}
+
+export async function createManagedUserAction(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") || "");
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+  const password = String(formData.get("password") || "").trim();
+  const role = String(formData.get("role") || "").trim() as "overseer" | "bishop" | "pastor";
+  const district = String(formData.get("district") || "").trim();
+  const churchId = String(formData.get("churchId") || "").trim();
+
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin"]);
+  const auth = getFirebaseAdminAuth();
+  const db = getFirebaseAdminDb();
+
+  if (!auth || !db) {
+    throw new Error("Firebase admin is not configured.");
+  }
+
+  if (!name || !email || !password || !role) {
+    throw new Error("Name, email, temporary password, and role are required.");
+  }
+
+  if ((role === "overseer" || role === "bishop") && !district) {
+    throw new Error("Overseer and Bishop accounts require a district.");
+  }
+
+  if (role === "pastor" && !churchId) {
+    throw new Error("Pastor accounts must be connected to a church.");
+  }
+
+  const existingUsers = await getUsersByTenant(tenantSlug);
+  if (existingUsers.some((existingUser) => existingUser.email.toLowerCase() === email)) {
+    throw new Error("That email is already assigned to a user in this directory.");
+  }
+
+  let authUser;
+  try {
+    authUser = await auth.getUserByEmail(email);
+    throw new Error("That email already exists in Firebase Authentication.");
+  } catch (error) {
+    if (error instanceof Error && !error.message.includes("There is no user record")) {
+      throw error;
+    }
+  }
+
+  authUser = await auth.createUser({
+    email,
+    password,
+    displayName: name
+  });
+
+  await db.collection("users").doc(authUser.uid).set({
+    tenant_id: tenant.id,
+    role,
+    district: role === "pastor" ? null : district || null,
+    church_id: role === "pastor" ? churchId : null,
+    name,
+    email
+  });
+
+  await db.collection("audit_logs").add({
+    tenant_id: tenant.id,
+    action: "user_created",
+    created_user_uid: authUser.uid,
+    created_user_role: role,
+    performed_by: user.uid,
+    created_at: new Date().toISOString()
+  });
+
+  revalidatePath(`/${tenantSlug}/admin`);
 }

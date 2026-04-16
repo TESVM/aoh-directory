@@ -13,7 +13,7 @@ export default async function AdminChurchPage({
   params: Promise<{ tenant: string; id: string }>;
 }) {
   const { tenant: tenantSlug, id } = await params;
-  const { user } = await requireTenantRole(tenantSlug, ["admin", "district_leader"]);
+  const { user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
   const viewer = await getViewerContext(tenantSlug);
 
   if (!viewer || viewer.role === "public") {
@@ -25,7 +25,11 @@ export default async function AdminChurchPage({
     notFound();
   }
 
-  if (user.role === "district_leader" && user.district !== church.district) {
+  if ((user.role === "overseer" || user.role === "bishop") && user.district !== church.district) {
+    redirect(`/${tenantSlug}/admin`);
+  }
+
+  if (user.role === "pastor" && user.churchId !== church.id) {
     redirect(`/${tenantSlug}/admin`);
   }
 

@@ -29,7 +29,7 @@ export async function SiteHeader({ tenant }: { tenant: Tenant }) {
           <Link href={`/${tenant.slug}`} prefetch={false}>Directory</Link>
           <Link href={`/${tenant.slug}/district/3`} prefetch={false}>District View</Link>
           <Link href={canAccessTenantAdmin ? `/${tenant.slug}/admin` : `/login?next=/${tenant.slug}/admin`} prefetch={false}>
-            {canAccessTenantAdmin ? "Admin" : "Login"}
+            {canAccessTenantAdmin ? "Back Office" : "Login"}
           </Link>
           {canAccessTenantAdmin ? (
             <Link href="/logout" prefetch={false}>Logout</Link>

@@ -1,5 +1,5 @@
 export type VerificationStatus = "verified" | "pending" | "submitted";
-export type ViewerRole = "admin" | "district_leader" | "public";
+export type ViewerRole = "admin" | "overseer" | "bishop" | "pastor" | "public";
 
 export type Tenant = {
   id: string;
@@ -52,6 +52,7 @@ export type UserRecord = {
   tenantId: string;
   role: Exclude<ViewerRole, "public">;
   district?: string;
+  churchId?: string;
   name: string;
   email: string;
 };
@@ -60,5 +61,6 @@ export type ViewerContext = {
   tenant: Tenant;
   role: ViewerRole;
   district?: string;
+  churchId?: string;
   user?: UserRecord;
 };

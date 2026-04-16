@@ -254,9 +254,9 @@ export const seededUsers: UserRecord[] = [
   {
     uid: "leader-d3",
     tenantId: "tenant-aoh",
-    role: "district_leader",
+    role: "overseer",
     district: "3",
-    name: "District 3 Leader",
+    name: "District 3 Overseer",
     email: "district3@aohdirectory.org"
   }
 ];

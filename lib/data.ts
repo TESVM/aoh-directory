@@ -49,8 +49,9 @@ type FirestoreTenant = {
 
 type FirestoreUser = {
   tenant_id: string;
-  role: "admin" | "district_leader";
+  role: "admin" | "district_leader" | "overseer" | "bishop" | "pastor";
   district?: string;
+  church_id?: string;
   name: string;
   email: string;
 };
@@ -127,11 +128,13 @@ function mapTenantDoc(id: string, data: FirestoreTenant): Tenant {
 }
 
 function mapUserDoc(uid: string, data: FirestoreUser): UserRecord {
+  const normalizedRole = data.role === "district_leader" ? "overseer" : data.role;
   return {
     uid,
     tenantId: data.tenant_id,
-    role: data.role,
+    role: normalizedRole,
     district: data.district,
+    churchId: data.church_id,
     name: data.name,
     email: data.email
   };
@@ -289,22 +292,29 @@ export async function getViewerContext(tenantSlug: string): Promise<ViewerContex
     tenant,
     role: user.role,
     district: user.district,
+    churchId: user.churchId,
     user
   };
 }
 
 export async function getScopedChurches(viewer: ViewerContext) {
   const tenantChurches = await getChurchesByTenant(viewer.tenant.slug);
-  if (viewer.role === "district_leader" && viewer.district) {
+  if ((viewer.role === "overseer" || viewer.role === "bishop") && viewer.district) {
     return tenantChurches.filter((church) => church.district === viewer.district);
+  }
+  if (viewer.role === "pastor" && viewer.churchId) {
+    return tenantChurches.filter((church) => church.id === viewer.churchId);
   }
   return tenantChurches;
 }
 
 export async function getScopedSubmissions(viewer: ViewerContext) {
   const tenantSubmissions = await getSubmissionsByTenant(viewer.tenant.slug);
-  if (viewer.role === "district_leader" && viewer.district) {
+  if ((viewer.role === "overseer" || viewer.role === "bishop") && viewer.district) {
     return tenantSubmissions.filter((submission) => submission.data.district === viewer.district);
+  }
+  if (viewer.role === "pastor" && viewer.churchId) {
+    return [];
   }
   return tenantSubmissions;
 }
@@ -334,5 +344,22 @@ export async function getUserByEmail(email: string) {
     return mapUserDoc(doc.id, doc.data() as FirestoreUser);
   } catch {
     return seededUsers.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
+  }
+}
+
+export async function getUsersByTenant(tenantSlug: string) {
+  const tenant = await getTenantBySlug(tenantSlug);
+  if (!tenant) return [];
+
+  const db = getFirebaseAdminDb();
+  if (!db) {
+    return seededUsers.filter((user) => user.tenantId === tenant.id);
+  }
+
+  try {
+    const snapshot = await db.collection("users").where("tenant_id", "==", tenant.id).get();
+    return snapshot.docs.map((doc) => mapUserDoc(doc.id, doc.data() as FirestoreUser));
+  } catch {
+    return seededUsers.filter((user) => user.tenantId === tenant.id);
   }
 }

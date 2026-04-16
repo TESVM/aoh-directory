@@ -56,7 +56,9 @@ Copy `.env.example` to `.env.local` and set:
 Role behavior:
 
 - `admin` can manage all churches and submissions for the tenant
-- `district_leader` can only manage records in their assigned district
+- `overseer` and `bishop` can only manage records in their assigned district
+- `pastor` can only manage their assigned church
+- `admin` can create new editor accounts from the back office
 - every edit writes an `audit_logs` entry
 
 ## Bulk Church Import
