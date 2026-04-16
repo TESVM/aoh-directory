@@ -1,0 +1,262 @@
+import { Church, Submission, Tenant, UserRecord } from "@/lib/types";
+
+export const seededTenants: Tenant[] = [
+  {
+    id: "tenant-aoh",
+    name: "Apostolic Overcoming Holy Church of God, Inc.",
+    slug: "aoh",
+    tagline: "A growing directory for churches, districts, and leadership across the network.",
+    branding: {
+      color: "#704710",
+      accent: "#254441",
+      logoText: "AOH Directory"
+    }
+  },
+  {
+    id: "tenant-demo",
+    name: "Network Demo Tenant",
+    slug: "demo",
+    tagline: "Second tenant proving route and data isolation.",
+    branding: {
+      color: "#7f2d2d",
+      accent: "#1d2430",
+      logoText: "Demo Directory"
+    }
+  }
+];
+
+export const seededChurches: Church[] = [
+  {
+    id: "greater-hope-mobile",
+    tenantId: "tenant-aoh",
+    name: "Greater Hope Temple",
+    pastorName: "Marcus Bennett",
+    pastorTitle: "Bishop",
+    address: "1248 West Congress Street",
+    city: "Mobile",
+    state: "AL",
+    zip: "36603",
+    district: "1",
+    phone: "(251) 555-0188",
+    email: "office@greaterhopetemple.org",
+    website: "https://greaterhopetemple.example.org",
+    status: "verified",
+    source: "Headquarters roster",
+    lastUpdated: "2026-04-15",
+    location: { lat: 30.6832, lng: -88.0721 },
+    ministries: ["Youth", "Prayer", "Outreach"],
+    notes: "Regional host church for district meetings."
+  },
+  {
+    id: "new-light-jackson",
+    tenantId: "tenant-aoh",
+    name: "New Light Tabernacle",
+    pastorName: "Elaine Foster",
+    pastorTitle: "Elder",
+    address: "901 Maple Street",
+    city: "Jackson",
+    state: "MS",
+    zip: "39203",
+    district: "3",
+    phone: "(601) 555-0124",
+    email: "connect@newlighttabernacle.org",
+    website: "https://newlighttabernacle.example.org",
+    status: "verified",
+    source: "District council listing",
+    lastUpdated: "2026-04-12",
+    location: { lat: 32.3007, lng: -90.1848 },
+    ministries: ["Women", "Bible Study"],
+    notes: "Strong district leadership involvement."
+  },
+  {
+    id: "restoration-houston",
+    tenantId: "tenant-aoh",
+    name: "Restoration Temple of Praise",
+    pastorName: "Samuel Price",
+    pastorTitle: "Overseer",
+    address: "4302 Reed Road",
+    city: "Houston",
+    state: "TX",
+    zip: "77051",
+    district: "5",
+    phone: "(713) 555-0173",
+    email: "hello@restorationpraise.org",
+    website: "https://restorationpraise.example.org",
+    status: "pending",
+    source: "Public website",
+    lastUpdated: "2026-03-29",
+    location: { lat: 29.652, lng: -95.3659 },
+    ministries: ["Outreach", "Music", "Young Adults"]
+  },
+  {
+    id: "faith-lafayette",
+    tenantId: "tenant-aoh",
+    name: "Faith Deliverance Temple",
+    pastorName: "Rhonda Hughes",
+    pastorTitle: "District Elder",
+    address: "221 Simcoe Street",
+    city: "Lafayette",
+    state: "LA",
+    zip: "70501",
+    district: "4",
+    phone: "(337) 555-0195",
+    email: "info@faithdeliverance.example.org",
+    website: "https://faithdeliverance.example.org",
+    status: "verified",
+    source: "Regional district office",
+    lastUpdated: "2026-04-02",
+    location: { lat: 30.2217, lng: -92.0198 },
+    ministries: ["Prayer", "Children", "Community Care"]
+  },
+  {
+    id: "grace-baltimore",
+    tenantId: "tenant-aoh",
+    name: "Grace Apostolic Center",
+    pastorName: "Terrence Cole",
+    pastorTitle: "Pastor",
+    address: "603 North Avenue",
+    city: "Baltimore",
+    state: "MD",
+    zip: "21217",
+    district: "7",
+    phone: "(410) 555-0149",
+    email: "office@graceapostolic.example.org",
+    website: "https://graceapostolic.example.org",
+    status: "submitted",
+    source: "Community submission",
+    lastUpdated: "2026-04-10",
+    location: { lat: 39.3091, lng: -76.6403 },
+    ministries: ["Outreach", "Youth"]
+  },
+  {
+    id: "mount-victory-brooklyn",
+    tenantId: "tenant-aoh",
+    name: "Mount Victory Cathedral",
+    pastorName: "Deborah Lane",
+    pastorTitle: "Bishop",
+    address: "77 Rockaway Avenue",
+    city: "Brooklyn",
+    state: "NY",
+    zip: "11233",
+    district: "8",
+    phone: "(718) 555-0117",
+    email: "team@mountvictory.example.org",
+    website: "https://mountvictory.example.org",
+    status: "verified",
+    source: "Church website",
+    lastUpdated: "2026-04-09",
+    location: { lat: 40.6782, lng: -73.9101 },
+    ministries: ["Music", "Media", "Women"]
+  },
+  {
+    id: "living-word-orlando",
+    tenantId: "tenant-aoh",
+    name: "Living Word Sanctuary",
+    pastorName: "Jalen Morris",
+    pastorTitle: "Elder",
+    address: "1470 Silver Star Road",
+    city: "Orlando",
+    state: "FL",
+    zip: "32804",
+    district: "6",
+    phone: "(407) 555-0162",
+    email: "care@livingwordsanctuary.example.org",
+    website: "https://livingwordsanctuary.example.org",
+    status: "pending",
+    source: "District handout",
+    lastUpdated: "2026-03-18",
+    location: { lat: 28.5807, lng: -81.4003 },
+    ministries: ["Prayer", "Young Adults"]
+  },
+  {
+    id: "steadfast-chicago",
+    tenantId: "tenant-demo",
+    name: "Steadfast Fellowship",
+    pastorName: "Nina Brooks",
+    pastorTitle: "Pastor",
+    address: "18 East 95th Street",
+    city: "Chicago",
+    state: "IL",
+    zip: "60619",
+    district: "Central",
+    phone: "(773) 555-0111",
+    email: "hello@steadfast.example.org",
+    website: "https://steadfast.example.org",
+    status: "verified",
+    source: "Demo tenant seed",
+    lastUpdated: "2026-04-15",
+    location: { lat: 41.721, lng: -87.621 },
+    ministries: ["Community", "Outreach"]
+  }
+];
+
+export const seededSubmissions: Submission[] = [
+  {
+    id: "sub-1",
+    tenantId: "tenant-aoh",
+    status: "pending",
+    createdAt: "2026-04-14",
+    data: {
+      name: "Victory Temple Fellowship",
+      pastorName: "Alicia Reed",
+      pastorTitle: "Pastor",
+      address: "219 Carter Avenue",
+      city: "Birmingham",
+      state: "AL",
+      zip: "35211",
+      district: "2",
+      phone: "(205) 555-0170",
+      email: "info@victorytemple.example.org",
+      website: "https://victorytemple.example.org",
+      status: "submitted",
+      source: "Public submission",
+      lastUpdated: "2026-04-14",
+      location: { lat: 33.4801, lng: -86.851 },
+      ministries: ["Youth", "Outreach"],
+      notes: "Submitted through public registration form."
+    }
+  },
+  {
+    id: "sub-2",
+    tenantId: "tenant-aoh",
+    status: "pending",
+    createdAt: "2026-04-13",
+    data: {
+      name: "Temple of Reconciliation",
+      pastorName: "Harold Stone",
+      pastorTitle: "Overseer",
+      address: "1301 Poydras Street",
+      city: "New Orleans",
+      state: "LA",
+      zip: "70112",
+      district: "4",
+      phone: "(504) 555-0115",
+      email: "contact@reconciliation.example.org",
+      website: "https://reconciliation.example.org",
+      status: "submitted",
+      source: "Public submission",
+      lastUpdated: "2026-04-13",
+      location: { lat: 29.9511, lng: -90.0796 },
+      ministries: ["Prayer", "Relief"],
+      notes: "Potential duplicate address not yet reviewed."
+    }
+  }
+];
+
+export const seededUsers: UserRecord[] = [
+  {
+    uid: "admin-aoh",
+    tenantId: "tenant-aoh",
+    role: "admin",
+    name: "AOH Admin",
+    email: "admin@aohdirectory.org"
+  },
+  {
+    uid: "leader-d3",
+    tenantId: "tenant-aoh",
+    role: "district_leader",
+    district: "3",
+    name: "District 3 Leader",
+    email: "district3@aohdirectory.org"
+  }
+];

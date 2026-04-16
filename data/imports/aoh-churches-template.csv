@@ -1,0 +1,2 @@
+church_name,pastor_name,pastor_title,address,city,state,zip,district,phone,email,website,status,source,last_updated,lat,lng,ministries,notes
+Example Temple,Jane Smith,Bishop,123 Main Street,Mobile,AL,36603,1,(251) 555-0100,office@exampletemple.org,https://exampletemple.org,verified,Official roster,2026-04-15,30.6832,-88.0721,"Youth|Prayer|Outreach",Replace this example row with real AOH data

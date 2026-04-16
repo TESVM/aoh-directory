@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasTenantAccess(tenantId) {
+      return isSignedIn() && userDoc().data.tenant_id == tenantId;
+    }
+
+    function isAdmin(tenantId) {
+      return hasTenantAccess(tenantId) && userDoc().data.role == "admin";
+    }
+
+    function isDistrictLeaderFor(tenantId, districtId) {
+      return hasTenantAccess(tenantId)
+        && userDoc().data.role == "district_leader"
+        && userDoc().data.district == districtId;
+    }
+
+    match /tenants/{tenantId} {
+      allow read: if true;
+      allow write: if isAdmin(tenantId);
+    }
+
+    match /churches/{churchId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin(request.resource.data.tenant_id)
+        || isDistrictLeaderFor(request.resource.data.tenant_id, request.resource.data.district);
+    }
+
+    match /submissions/{submissionId} {
+      allow create: if true;
+      allow read: if isAdmin(resource.data.tenant_id)
+        || isDistrictLeaderFor(resource.data.tenant_id, resource.data.data.district);
+      allow update, delete: if isAdmin(resource.data.tenant_id)
+        || isDistrictLeaderFor(resource.data.tenant_id, resource.data.data.district);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /audit_logs/{logId} {
+      allow read, write: if isAdmin(resource.data.tenant_id)
+        || isAdmin(request.resource.data.tenant_id);
+    }
+  }
+}
