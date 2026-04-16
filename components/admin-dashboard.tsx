@@ -26,9 +26,39 @@ export function AdminDashboard({
   }
 
   const pendingSubmissions = submissions.filter((submission) => submission.status === "pending");
+  const recentlyUpdated = [...churches]
+    .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))
+    .slice(0, 8);
 
   return (
     <div className="space-y-8">
+      <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Simple Back Office</p>
+        <h2 className="mt-3 font-serif text-3xl text-ink">Choose what you want to do</h2>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
+          This office is built for simple daily work. Review new churches, fix live listings, or open the public
+          directory to check how a page looks.
+        </p>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <QuickAction
+            title="Review new churches"
+            detail={`${pendingSubmissions.length} waiting`}
+            description="Open a submitted church, correct any mistakes, then approve it."
+          />
+          <QuickAction
+            title="Fix live directory listings"
+            detail={`${churches.length} in your scope`}
+            description="Open a church card below, update the information, and save."
+          />
+          <QuickAction
+            title="Check the public site"
+            detail="Public view"
+            description="Open the live directory and make sure the information looks right."
+            href={`/${viewer.tenant.slug}`}
+          />
+        </div>
+      </section>
+
       <div className="grid gap-4 md:grid-cols-4">
         <Metric value={String(churches.length)} label="Scoped churches" />
         <Metric value={String(churches.filter((church) => church.status === "verified").length)} label="Verified" />
@@ -36,10 +66,23 @@ export function AdminDashboard({
         <Metric value={viewer.role === "district_leader" ? `District ${viewer.district}` : "All districts"} label="Access scope" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.75fr_1.25fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Review Queue</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">New Churches Waiting</p>
+              <h3 className="mt-2 font-serif text-2xl text-ink">Review one at a time</h3>
+            </div>
+            <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
+              {pendingSubmissions.length} pending
+            </span>
+          </div>
           <div className="mt-5 space-y-4">
+            {pendingSubmissions.length === 0 ? (
+              <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+                There are no new church submissions waiting right now.
+              </div>
+            ) : null}
             {pendingSubmissions.map((submission) => {
               const duplicates = duplicateMap[submission.id] ?? [];
               return (
@@ -56,14 +99,15 @@ export function AdminDashboard({
                     </span>
                   </div>
                   <p className="mt-4 text-sm text-ink">
-                    Submitted {submission.createdAt}. Production workflow: approve, edit, or reject and log the action.
+                    Submitted {submission.createdAt}. Open it first if you want to fix the name, address, pastor, or district before approving.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-3">
                     <Link
                       href={`/${viewer.tenant.slug}/admin/submission/${submission.id}`}
+                      prefetch={false}
                       className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink"
                     >
-                      Edit Submission
+                      Open Submission
                     </Link>
                     <form action={reviewSubmissionAction}>
                       <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
@@ -75,9 +119,10 @@ export function AdminDashboard({
                     </form>
                     <Link
                       href={`/${viewer.tenant.slug}`}
+                      prefetch={false}
                       className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink"
                     >
-                      Review Public View
+                      View Public Site
                     </Link>
                     <form action={reviewSubmissionAction}>
                       <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
@@ -107,44 +152,56 @@ export function AdminDashboard({
         </section>
 
         <section className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Published Churches</p>
-          <div className="mt-5 overflow-hidden rounded-[1.25rem] border border-line/80">
-            <table className="min-w-full border-collapse text-left text-sm">
-              <thead className="bg-surface text-muted">
-                <tr>
-                  <th className="px-4 py-3 font-semibold">Church</th>
-                  <th className="px-4 py-3 font-semibold">District</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {churches.map((church) => (
-                  <tr key={church.id} className="border-t border-line/70">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-ink">{church.name}</p>
-                      <p className="text-muted">{church.city}, {church.state}</p>
-                    </td>
-                    <td className="px-4 py-3 text-ink">{church.district}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
-                        {church.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-3">
-                        <Link href={`/${viewer.tenant.slug}/church/${church.id}`} className="font-medium text-brand-700">
-                          View
-                        </Link>
-                        <Link href={`/${viewer.tenant.slug}/admin/church/${church.id}`} className="font-medium text-ink">
-                          Edit
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Live Directory Listings</p>
+              <h3 className="mt-2 font-serif text-2xl text-ink">Open a church and fix it</h3>
+            </div>
+            <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
+              {recentlyUpdated.length} shown
+            </span>
+          </div>
+          <div className="mt-5 space-y-4">
+            {recentlyUpdated.map((church) => (
+              <div key={church.id} className="rounded-[1.25rem] border border-line/80 bg-surface p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h4 className="font-serif text-2xl text-ink">{church.name}</h4>
+                    <p className="text-sm text-muted">
+                      {church.city}, {church.state} • District {church.district}
+                    </p>
+                    <p className="mt-2 text-sm text-ink">
+                      {church.pastorTitle} {church.pastorName}
+                    </p>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
+                    {church.status}
+                  </span>
+                </div>
+                <p className="mt-4 text-sm text-muted">Last updated {church.lastUpdated || "Not listed"}.</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link
+                    href={`/${viewer.tenant.slug}/admin/church/${church.id}`}
+                    prefetch={false}
+                    className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Edit Church
+                  </Link>
+                  <Link
+                    href={`/${viewer.tenant.slug}/church/${church.id}`}
+                    prefetch={false}
+                    className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink"
+                  >
+                    View Public Page
+                  </Link>
+                </div>
+              </div>
+            ))}
+            {churches.length > recentlyUpdated.length ? (
+              <p className="text-sm text-muted">
+                Showing the most recently updated churches first. Open more records by editing from this list after future updates.
+              </p>
+            ) : null}
           </div>
         </section>
       </div>
@@ -158,5 +215,32 @@ function Metric({ value, label }: { value: string; label: string }) {
       <p className="text-3xl font-semibold text-ink">{value}</p>
       <p className="mt-1 text-sm text-muted">{label}</p>
     </div>
+  );
+}
+
+function QuickAction({
+  title,
+  detail,
+  description,
+  href
+}: {
+  title: string;
+  detail: string;
+  description: string;
+  href?: `/${string}`;
+}) {
+  const content = (
+    <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-700">{detail}</p>
+      <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+    </div>
+  );
+
+  if (!href) return content;
+  return (
+    <Link href={href} prefetch={false}>
+      {content}
+    </Link>
   );
 }

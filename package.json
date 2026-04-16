@@ -10,6 +10,7 @@
     "deploy:preflight": "npm run lint && npm run build && npm run check:firebase",
     "check:firebase": "node --env-file=.env.local ./scripts/check-firebase-config.mjs",
     "seed:firestore": "node --env-file=.env.local ./scripts/seed-firestore.mjs",
+    "create:district-leader": "node --env-file=.env.local ./scripts/create-district-leader.mjs",
     "import:churches": "node --env-file=.env.local ./scripts/import-churches-from-csv.mjs",
     "import:html": "node --env-file=.env.local ./scripts/import-churches-from-html.mjs",
     "find:duplicates": "node --env-file=.env.local ./scripts/find-duplicate-churches.mjs",

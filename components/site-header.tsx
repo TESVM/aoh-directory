@@ -26,13 +26,13 @@ export async function SiteHeader({ tenant }: { tenant: Tenant }) {
           </div>
         </Link>
         <nav className="flex flex-wrap items-center gap-3 text-sm font-medium text-muted">
-          <Link href={`/${tenant.slug}`}>Directory</Link>
-          <Link href={`/${tenant.slug}/district/3`}>District View</Link>
-          <Link href={canAccessTenantAdmin ? `/${tenant.slug}/admin` : `/login?next=/${tenant.slug}/admin`}>
+          <Link href={`/${tenant.slug}`} prefetch={false}>Directory</Link>
+          <Link href={`/${tenant.slug}/district/3`} prefetch={false}>District View</Link>
+          <Link href={canAccessTenantAdmin ? `/${tenant.slug}/admin` : `/login?next=/${tenant.slug}/admin`} prefetch={false}>
             {canAccessTenantAdmin ? "Admin" : "Login"}
           </Link>
           {canAccessTenantAdmin ? (
-            <Link href="/logout">Logout</Link>
+            <Link href="/logout" prefetch={false}>Logout</Link>
           ) : null}
         </nav>
       </div>
