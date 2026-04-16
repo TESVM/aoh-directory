@@ -13,6 +13,9 @@ type RecordValues = Pick<
   | "phone"
   | "email"
   | "website"
+  | "churchImageUrl"
+  | "pastorImageUrl"
+  | "logoImageUrl"
   | "serviceHours"
   | "onlineWorshipUrl"
   | "status"
@@ -86,6 +89,32 @@ export function AdminRecordForm({
           rows={4}
           helpText="Put each service time on its own line."
         />
+        <div className="md:col-span-2 rounded-[1.5rem] border border-line/80 bg-sky/40 p-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Visuals</p>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Upload a church photo, pastor photo, and church logo so visitors can connect with the church faster.
+          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <ImageUploadField
+              label="Church photo"
+              name="churchImage"
+              currentUrl={values.churchImageUrl}
+              helpText="Use an exterior or sanctuary photo."
+            />
+            <ImageUploadField
+              label="Pastor photo"
+              name="pastorImage"
+              currentUrl={values.pastorImageUrl}
+              helpText="Use a clear portrait photo."
+            />
+            <ImageUploadField
+              label="Church logo"
+              name="churchLogo"
+              currentUrl={values.logoImageUrl}
+              helpText="Square logos work best."
+            />
+          </div>
+        </div>
         <Field label="Source" name="source" defaultValue={values.source} className="md:col-span-2" />
         <TextArea label="Notes" name="notes" defaultValue={values.notes} className="md:col-span-2" />
       </div>
@@ -164,6 +193,42 @@ function TextArea({
         defaultValue={defaultValue ?? ""}
         rows={rows}
         className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none ring-0 transition focus:border-brand-700"
+      />
+      {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}
+    </div>
+  );
+}
+
+function ImageUploadField({
+  label,
+  name,
+  currentUrl,
+  helpText
+}: {
+  label: string;
+  name: "churchImage" | "pastorImage" | "churchLogo";
+  currentUrl?: string;
+  helpText?: string;
+}) {
+  return (
+    <div className="space-y-3 rounded-[1.35rem] border border-line/80 bg-white p-4">
+      <p className="text-sm font-medium text-ink">{label}</p>
+      {currentUrl ? (
+        <img
+          src={currentUrl}
+          alt={label}
+          className="aspect-[4/3] w-full rounded-[1.1rem] border border-line/70 object-cover"
+        />
+      ) : (
+        <div className="grid aspect-[4/3] w-full place-items-center rounded-[1.1rem] border border-dashed border-line bg-surface text-center text-sm text-muted">
+          No image uploaded yet
+        </div>
+      )}
+      <input
+        name={name}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="block w-full text-sm text-ink file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:font-semibold file:text-white"
       />
       {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}
     </div>

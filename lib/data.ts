@@ -24,6 +24,9 @@ type FirestoreChurch = {
     lat: number;
     lng: number;
   };
+  church_image_url?: string;
+  pastor_image_url?: string;
+  logo_image_url?: string;
   service_hours?: string[];
   online_worship_url?: string;
   ministries?: string[];
@@ -96,6 +99,9 @@ function mapChurchDoc(doc: QueryDocumentSnapshot<FirestoreChurch>): Church {
     source: data.source ?? "Firestore",
     lastUpdated: normalizeDate(data.last_updated),
     location: data.location ?? { lat: 0, lng: 0 },
+    churchImageUrl: data.church_image_url,
+    pastorImageUrl: data.pastor_image_url,
+    logoImageUrl: data.logo_image_url,
     serviceHours: data.service_hours ?? [],
     onlineWorshipUrl: data.online_worship_url,
     ministries: data.ministries ?? [],
@@ -127,6 +133,9 @@ function mapSubmissionDoc(doc: QueryDocumentSnapshot<FirestoreSubmission>, tenan
       source: data.data.source ?? "Submission",
       lastUpdated: normalizeDate(data.data.last_updated),
       location: data.data.location ?? { lat: 0, lng: 0 },
+      churchImageUrl: data.data.church_image_url,
+      pastorImageUrl: data.data.pastor_image_url,
+      logoImageUrl: data.data.logo_image_url,
       serviceHours: data.data.service_hours ?? [],
       onlineWorshipUrl: data.data.online_worship_url,
       ministries: data.data.ministries ?? [],

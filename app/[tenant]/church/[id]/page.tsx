@@ -44,10 +44,21 @@ export default async function ChurchProfilePage({
                     District {church.district}
                   </span>
                 </div>
-                <h1 className="mt-5 font-serif text-5xl leading-tight sm:text-6xl">{church.name}</h1>
-                <p className="mt-4 text-xl text-brand-100">
-                  {church.pastorTitle} {church.pastorName}
-                </p>
+                <div className="mt-5 flex flex-wrap items-center gap-4">
+                  {church.logoImageUrl ? (
+                    <img
+                      src={church.logoImageUrl}
+                      alt={`${church.name} logo`}
+                      className="h-20 w-20 rounded-[1.2rem] border border-white/15 bg-white p-2 object-cover"
+                    />
+                  ) : null}
+                  <div>
+                    <h1 className="font-serif text-5xl leading-tight sm:text-6xl">{church.name}</h1>
+                    <p className="mt-4 text-xl text-brand-100">
+                      {church.pastorTitle} {church.pastorName}
+                    </p>
+                  </div>
+                </div>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-brand-100">
                   Find service times, get directions, join online worship, and connect with the ministry life of this church.
                 </p>
@@ -97,6 +108,21 @@ export default async function ChurchProfilePage({
 
           <div className="grid gap-5 bg-white p-8 lg:grid-cols-[1fr_0.9fr]">
             <div className="space-y-5">
+              <ProfileCard title="Church Family">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <VisualCard
+                    title="Church Photo"
+                    imageUrl={church.churchImageUrl}
+                    fallback="Church photo coming soon."
+                  />
+                  <VisualCard
+                    title="Pastor Photo"
+                    imageUrl={church.pastorImageUrl}
+                    fallback="Pastor photo coming soon."
+                  />
+                </div>
+              </ProfileCard>
+
               <ProfileCard title="Church Information">
                 <a
                   href={directionsUrl}
@@ -196,5 +222,28 @@ function ProfileCard({ title, children }: { title: string; children: ReactNode }
       <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">{title}</p>
       <div className="mt-4 space-y-2 text-base leading-7 text-ink">{children}</div>
     </section>
+  );
+}
+
+function VisualCard({
+  title,
+  imageUrl,
+  fallback
+}: {
+  title: string;
+  imageUrl?: string;
+  fallback: string;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-semibold text-ink">{title}</p>
+      {imageUrl ? (
+        <img src={imageUrl} alt={title} className="aspect-[4/3] w-full rounded-[1.2rem] border border-line/70 object-cover" />
+      ) : (
+        <div className="grid aspect-[4/3] w-full place-items-center rounded-[1.2rem] border border-dashed border-line bg-white px-3 text-center text-sm text-muted">
+          {fallback}
+        </div>
+      )}
+    </div>
   );
 }

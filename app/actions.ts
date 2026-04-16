@@ -1,7 +1,8 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
+import { getFirebaseAdminAuth, getFirebaseAdminBucket, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
   findPotentialDuplicates,
   getChurchByTenantAndId,
@@ -46,6 +47,9 @@ type SubmissionPayload = {
 };
 
 type ChurchPayload = SubmissionPayload & {
+  churchImageUrl?: string;
+  pastorImageUrl?: string;
+  logoImageUrl?: string;
   serviceHours: string[];
   onlineWorshipUrl: string;
   status: "verified" | "pending" | "submitted";
@@ -106,6 +110,9 @@ function readChurchPayload(formData: FormData): ChurchPayload {
     phone: String(formData.get("phone") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     website: String(formData.get("website") || "").trim(),
+    churchImageUrl: undefined,
+    pastorImageUrl: undefined,
+    logoImageUrl: undefined,
     serviceHours: parseMultilineList(formData.get("serviceHours")),
     onlineWorshipUrl: String(formData.get("onlineWorshipUrl") || "").trim(),
     status: (String(formData.get("status") || "pending").trim() as ChurchPayload["status"]),
@@ -130,6 +137,46 @@ function assertRoleScopedChurch(
   if (actor.role === "pastor" && actor.churchId !== churchId) {
     throw new Error("Pastors can only manage their assigned church.");
   }
+}
+
+async function uploadImageIfProvided(
+  formData: FormData,
+  fieldName: "churchImage" | "pastorImage" | "churchLogo",
+  storagePath: string
+) {
+  const entry = formData.get(fieldName);
+  if (!(entry instanceof File) || !entry.size) {
+    return null;
+  }
+
+  if (!entry.type.startsWith("image/")) {
+    throw new Error("Only image uploads are allowed.");
+  }
+
+  const bucket = getFirebaseAdminBucket();
+  if (!bucket) {
+    throw new Error("Firebase Storage is not configured.");
+  }
+
+  const extension = entry.name.includes(".") ? entry.name.split(".").pop()?.toLowerCase() : null;
+  const safeExtension = extension && /^[a-z0-9]+$/i.test(extension) ? extension : "jpg";
+  const objectPath = `${storagePath}.${safeExtension}`;
+  const file = bucket.file(objectPath);
+  const buffer = Buffer.from(await entry.arrayBuffer());
+  const downloadToken = randomUUID();
+
+  await file.save(buffer, {
+    metadata: {
+      contentType: entry.type,
+      metadata: {
+        firebaseStorageDownloadTokens: downloadToken
+      }
+    },
+    resumable: false,
+    public: false
+  });
+
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
 }
 
 export async function submitChurchSubmissionAction(
@@ -184,6 +231,9 @@ export async function submitChurchSubmissionAction(
         source: "Public submission",
         last_updated: new Date().toISOString().slice(0, 10),
         location: { lat: 0, lng: 0 },
+        church_image_url: "",
+        pastor_image_url: "",
+        logo_image_url: "",
         service_hours: [],
         online_worship_url: "",
         ministries: []
@@ -261,6 +311,9 @@ export async function reviewSubmissionAction(formData: FormData) {
       source: "Approved submission",
       last_updated: new Date().toISOString().slice(0, 10),
       location: submission.data.location,
+      church_image_url: submission.data.churchImageUrl || "",
+      pastor_image_url: submission.data.pastorImageUrl || "",
+      logo_image_url: submission.data.logoImageUrl || "",
       service_hours: submission.data.serviceHours,
       online_worship_url: submission.data.onlineWorshipUrl,
       ministries: submission.data.ministries,
@@ -309,6 +362,19 @@ export async function updateChurchAction(formData: FormData) {
   assertRoleScopedDistrict(user, payload.district);
   assertRoleScopedChurch(user, currentChurch.id);
 
+  const churchImageUrl =
+    (await uploadImageIfProvided(formData, "churchImage", `${tenant.id}/churches/${churchId}/church-photo-${Date.now()}`)) ||
+    currentChurch.churchImageUrl ||
+    "";
+  const pastorImageUrl =
+    (await uploadImageIfProvided(formData, "pastorImage", `${tenant.id}/churches/${churchId}/pastor-photo-${Date.now()}`)) ||
+    currentChurch.pastorImageUrl ||
+    "";
+  const logoImageUrl =
+    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/churches/${churchId}/logo-${Date.now()}`)) ||
+    currentChurch.logoImageUrl ||
+    "";
+
   await db.collection("churches").doc(churchId).update({
     name: payload.name,
     pastor_name: payload.pastorName,
@@ -321,6 +387,9 @@ export async function updateChurchAction(formData: FormData) {
     phone: payload.phone,
     email: payload.email,
     website: payload.website,
+    church_image_url: churchImageUrl,
+    pastor_image_url: pastorImageUrl,
+    logo_image_url: logoImageUrl,
     service_hours: payload.serviceHours,
     online_worship_url: payload.onlineWorshipUrl,
     status: payload.status,
@@ -364,6 +433,27 @@ export async function updateSubmissionAction(formData: FormData) {
   assertRoleScopedDistrict(user, currentSubmission.data.district);
   assertRoleScopedDistrict(user, payload.district);
 
+  const churchImageUrl =
+    (await uploadImageIfProvided(
+      formData,
+      "churchImage",
+      `${tenant.id}/submissions/${submissionId}/church-photo-${Date.now()}`
+    )) ||
+    currentSubmission.data.churchImageUrl ||
+    "";
+  const pastorImageUrl =
+    (await uploadImageIfProvided(
+      formData,
+      "pastorImage",
+      `${tenant.id}/submissions/${submissionId}/pastor-photo-${Date.now()}`
+    )) ||
+    currentSubmission.data.pastorImageUrl ||
+    "";
+  const logoImageUrl =
+    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/submissions/${submissionId}/logo-${Date.now()}`)) ||
+    currentSubmission.data.logoImageUrl ||
+    "";
+
   await db.collection("submissions").doc(submissionId).update({
     data: {
       name: payload.name,
@@ -377,6 +467,9 @@ export async function updateSubmissionAction(formData: FormData) {
       phone: payload.phone,
       email: payload.email,
       website: payload.website,
+      church_image_url: churchImageUrl,
+      pastor_image_url: pastorImageUrl,
+      logo_image_url: logoImageUrl,
       service_hours: payload.serviceHours,
       online_worship_url: payload.onlineWorshipUrl,
       status: payload.status,

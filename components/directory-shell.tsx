@@ -235,6 +235,13 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                     }`}
                     onClick={() => setSelectedId(church.id)}
                   >
+                    {church.churchImageUrl ? (
+                      <img
+                        src={church.churchImageUrl}
+                        alt={church.name}
+                        className="mb-4 aspect-[16/9] w-full rounded-[1rem] border border-line/80 object-cover"
+                      />
+                    ) : null}
                     <h2 className="font-serif text-xl text-ink">{church.name}</h2>
                     <p className="mt-1 text-sm text-muted">
                       {church.city}, {church.state}
@@ -254,16 +261,34 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
             <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
               {selectedChurch ? (
                 <div className="space-y-6">
+                  {selectedChurch.churchImageUrl ? (
+                    <img
+                      src={selectedChurch.churchImageUrl}
+                      alt={selectedChurch.name}
+                      className="aspect-[18/7] w-full rounded-[1.5rem] border border-line/70 object-cover"
+                    />
+                  ) : null}
                   <div className="flex flex-col justify-between gap-4 border-b border-line/70 pb-5 md:flex-row">
                     <div>
                       <div className="flex flex-wrap gap-2">
                         <Badge tone={badgeTone(selectedChurch.status)}>{selectedChurch.status}</Badge>
                         <Badge tone="bg-stone-100 text-stone-800">District {selectedChurch.district}</Badge>
                       </div>
-                      <h2 className="mt-3 font-serif text-3xl text-ink">{selectedChurch.name}</h2>
-                      <p className="mt-2 text-lg text-muted">
-                        {selectedChurch.pastorTitle} {selectedChurch.pastorName}
-                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-4">
+                        {selectedChurch.logoImageUrl ? (
+                          <img
+                            src={selectedChurch.logoImageUrl}
+                            alt={`${selectedChurch.name} logo`}
+                            className="h-16 w-16 rounded-[1rem] border border-line/70 bg-white object-cover p-2"
+                          />
+                        ) : null}
+                        <div>
+                          <h2 className="font-serif text-3xl text-ink">{selectedChurch.name}</h2>
+                          <p className="mt-2 text-lg text-muted">
+                            {selectedChurch.pastorTitle} {selectedChurch.pastorName}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-3">
                       <Link
@@ -317,6 +342,20 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
+                    <InfoCard label="Church Family">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <VisualTile
+                          title="Church Photo"
+                          imageUrl={selectedChurch.churchImageUrl}
+                          fallback="Church photo coming soon."
+                        />
+                        <VisualTile
+                          title="Pastor Photo"
+                          imageUrl={selectedChurch.pastorImageUrl}
+                          fallback="Pastor photo coming soon."
+                        />
+                      </div>
+                    </InfoCard>
                     <InfoCard label="Address">
                       <a
                         href={buildGoogleMapsDirectionsUrl(selectedChurch)}
@@ -585,6 +624,29 @@ function InfoCard({ label, children }: { label: string; children: ReactNode }) {
     <div className="rounded-[1.35rem] border border-line/80 bg-surface p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">{label}</p>
       <div className="mt-3 space-y-1 text-sm leading-7 text-ink">{children}</div>
+    </div>
+  );
+}
+
+function VisualTile({
+  title,
+  imageUrl,
+  fallback
+}: {
+  title: string;
+  imageUrl?: string;
+  fallback: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-semibold text-ink">{title}</p>
+      {imageUrl ? (
+        <img src={imageUrl} alt={title} className="aspect-[4/3] w-full rounded-[1rem] border border-line/70 object-cover" />
+      ) : (
+        <div className="grid aspect-[4/3] w-full place-items-center rounded-[1rem] border border-dashed border-line bg-white px-3 text-center text-sm text-muted">
+          {fallback}
+        </div>
+      )}
     </div>
   );
 }

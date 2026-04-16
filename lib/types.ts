@@ -34,6 +34,9 @@ export type Church = {
     lat: number;
     lng: number;
   };
+  churchImageUrl?: string;
+  pastorImageUrl?: string;
+  logoImageUrl?: string;
   serviceHours?: string[];
   onlineWorshipUrl?: string;
   ministries: string[];

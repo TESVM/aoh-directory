@@ -1,6 +1,7 @@
 import { applicationDefault, cert, getApp, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { hasFirebaseAdminConfig } from "@/lib/firebase/config";
 
 function getPrivateKey() {
@@ -27,12 +28,14 @@ export function getFirebaseAdminApp() {
         projectId,
         clientEmail,
         privateKey
-      })
+      }),
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
     });
   }
 
   return initializeApp({
-    credential: applicationDefault()
+    credential: applicationDefault(),
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
   });
 }
 
@@ -44,4 +47,9 @@ export function getFirebaseAdminAuth() {
 export function getFirebaseAdminDb() {
   const app = getFirebaseAdminApp();
   return app ? getFirestore(app) : null;
+}
+
+export function getFirebaseAdminBucket() {
+  const app = getFirebaseAdminApp();
+  return app ? getStorage(app).bucket() : null;
 }
