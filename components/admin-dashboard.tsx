@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createManagedUserAction, reviewSubmissionAction } from "@/app/actions";
+import { CommunicationsCenter } from "@/components/communications-center";
 import { Church, Submission, UserRecord, ViewerContext } from "@/lib/types";
 import { badgeTone } from "@/lib/utils";
 
@@ -146,6 +147,13 @@ export function AdminDashboard({
             </div>
           </div>
         </section>
+      ) : null}
+
+      {viewer.role === "admin" ? (
+        <CommunicationsCenter
+          tenantSlug={viewer.tenant.slug}
+          districts={uniqueDistricts(churches)}
+        />
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -379,4 +387,10 @@ function accessScopeLabel(viewer: ViewerContext) {
     return "One church";
   }
   return "All districts";
+}
+
+function uniqueDistricts(churches: Church[]) {
+  return [...new Set(churches.map((church) => church.district).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true })
+  );
 }

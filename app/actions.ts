@@ -5,6 +5,7 @@ import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
   findPotentialDuplicates,
   getChurchByTenantAndId,
+  getChurchesByTenant,
   getSubmissionByTenantAndId,
   getSubmissionsByTenant,
   getTenantBySlug,
@@ -15,6 +16,13 @@ import { requireTenantRole } from "@/lib/auth";
 export type ActionResult = {
   ok: boolean;
   message: string;
+};
+
+export type CommunicationResult = {
+  ok: boolean;
+  message: string;
+  emailCount?: number;
+  smsCount?: number;
 };
 
 type SubmissionPayload = {
@@ -36,6 +44,18 @@ type ChurchPayload = SubmissionPayload & {
   source: string;
   notes: string;
 };
+
+function normalizePhoneNumber(phone?: string) {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return null;
+}
+
+function unique<T>(values: T[]) {
+  return [...new Set(values)];
+}
 
 function assertFields(payload: SubmissionPayload) {
   if (!payload.name || !payload.pastorName || !payload.address || !payload.city || !payload.state) {
@@ -410,4 +430,150 @@ export async function createManagedUserAction(formData: FormData) {
   });
 
   revalidatePath(`/${tenantSlug}/admin`);
+}
+
+export async function sendBroadcastMessageAction(
+  _previousState: CommunicationResult,
+  formData: FormData
+): Promise<CommunicationResult> {
+  const tenantSlug = String(formData.get("tenantSlug") || "");
+  const subject = String(formData.get("subject") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  const channel = String(formData.get("channel") || "email").trim() as "email" | "sms" | "both";
+  const district = String(formData.get("district") || "").trim();
+
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin"]);
+
+  if (!body) {
+    return { ok: false, message: "Message body is required." };
+  }
+
+  if ((channel === "email" || channel === "both") && !subject) {
+    return { ok: false, message: "Email subject is required when sending email." };
+  }
+
+  const churches = await getChurchesByTenant(tenantSlug);
+  const scopedChurches = district ? churches.filter((church) => church.district === district) : churches;
+  const emails = unique(
+    scopedChurches
+      .map((church) => church.email?.trim().toLowerCase())
+      .filter((email): email is string => Boolean(email))
+  );
+  const phoneNumbers = unique(
+    scopedChurches
+      .map((church) => normalizePhoneNumber(church.phone))
+      .filter((phone): phone is string => Boolean(phone))
+  );
+
+  if (!emails.length && (channel === "email" || channel === "both")) {
+    return { ok: false, message: "No church email addresses were found for this message." };
+  }
+
+  if (!phoneNumbers.length && (channel === "sms" || channel === "both")) {
+    return { ok: false, message: "No church phone numbers were found that can receive text messages." };
+  }
+
+  const emailRequested = channel === "email" || channel === "both";
+  const smsRequested = channel === "sms" || channel === "both";
+
+  try {
+    if (emailRequested) {
+      const sendGridApiKey = process.env.SENDGRID_API_KEY;
+      const sendGridFromEmail = process.env.SENDGRID_FROM_EMAIL;
+
+      if (!sendGridApiKey || !sendGridFromEmail) {
+        return {
+          ok: false,
+          message: "Email sending is not configured yet. Add SENDGRID_API_KEY and SENDGRID_FROM_EMAIL."
+        };
+      }
+
+      const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sendGridApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          personalizations: [
+            {
+              to: emails.map((email) => ({ email }))
+            }
+          ],
+          from: { email: sendGridFromEmail, name: `${tenant.name} Back Office` },
+          subject,
+          content: [{ type: "text/plain", value: body }]
+        })
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        return { ok: false, message: `Email sending failed: ${responseText}` };
+      }
+    }
+
+    if (smsRequested) {
+      const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+      const twilioToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioFromPhone = process.env.TWILIO_FROM_PHONE;
+
+      if (!twilioSid || !twilioToken || !twilioFromPhone) {
+        return {
+          ok: false,
+          message: "Text messaging is not configured yet. Add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_PHONE."
+        };
+      }
+
+      for (const to of phoneNumbers) {
+        const payload = new URLSearchParams({
+          To: to,
+          From: twilioFromPhone,
+          Body: body
+        });
+
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${twilioSid}:${twilioToken}`).toString("base64")}`,
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: payload.toString()
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          return { ok: false, message: `Text sending failed: ${responseText}` };
+        }
+      }
+    }
+
+    const db = getFirebaseAdminDb();
+    if (db) {
+      await db.collection("audit_logs").add({
+        tenant_id: tenant.id,
+        action: "broadcast_sent",
+        channel,
+        district: district || null,
+        subject: subject || null,
+        email_count: emailRequested ? emails.length : 0,
+        sms_count: smsRequested ? phoneNumbers.length : 0,
+        performed_by: user.uid,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    revalidatePath(`/${tenantSlug}/admin`);
+
+    return {
+      ok: true,
+      message: `Message sent successfully.${emailRequested ? ` Email recipients: ${emails.length}.` : ""}${smsRequested ? ` Text recipients: ${phoneNumbers.length}.` : ""}`,
+      emailCount: emailRequested ? emails.length : 0,
+      smsCount: smsRequested ? phoneNumbers.length : 0
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to send the message."
+    };
+  }
 }

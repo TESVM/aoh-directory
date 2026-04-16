@@ -52,6 +52,7 @@ Copy `.env.example` to `.env.local` and set:
 - `/aoh/admin` dashboard
 - `/aoh/admin/church/[id]` edit a published church record
 - `/aoh/admin/submission/[id]` edit a queued submission before approval
+- admin-only communications center for bulk email and text messaging
 
 Role behavior:
 
@@ -60,6 +61,28 @@ Role behavior:
 - `pastor` can only manage their assigned church
 - `admin` can create new editor accounts from the back office
 - every edit writes an `audit_logs` entry
+
+## Communications Center
+
+The admin portal can send a message to all churches, or to one district, by:
+
+- email
+- text message
+- both
+
+Provider env vars:
+
+- `SENDGRID_API_KEY`
+- `SENDGRID_FROM_EMAIL`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_FROM_PHONE`
+
+Notes:
+
+- Email only works after SendGrid is configured.
+- Text messaging only works after Twilio is configured.
+- The portal logs each broadcast in `audit_logs`.
 
 ## Bulk Church Import
 
