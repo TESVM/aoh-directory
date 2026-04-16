@@ -110,18 +110,27 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
 
   return (
     <section className="space-y-8">
-      <div className="grid gap-6 rounded-[2rem] border border-line/80 bg-surface/80 p-6 shadow-soft lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-700">Tenant Aware</p>
-          <h1 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">{tenant.branding.logoText}</h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">{tenant.tagline}</p>
-        </div>
-        <div className="rounded-[1.5rem] border border-line/70 bg-gradient-to-br from-brand-50 to-sky p-5">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Launch Snapshot</p>
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <StatCard value={String(allChurches.length)} label="Churches" />
-            <StatCard value={String(allChurches.filter((church) => church.status === "verified").length)} label="Verified" />
-            <StatCard value={String(submissions.length)} label="Pending" />
+      <div className="overflow-hidden rounded-[2.4rem] bg-hero shadow-soft">
+        <div className="grid gap-8 px-6 py-10 text-white lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-14">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-brand-100">Apostolic Overcoming Holy Church of God, Inc.</p>
+            <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-6xl">
+              Find a church home, service time, and worship connection.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-100">
+              Search AOH churches by name, city, pastor, or district. Open a church, get directions, submit prayer, and connect fast.
+            </p>
+          </div>
+          <div className="rounded-[1.8rem] border border-white/10 bg-white/8 p-6 backdrop-blur">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-100">Directory Snapshot</p>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <StatCard value={String(allChurches.length)} label="Churches" dark />
+              <StatCard value={String(allChurches.filter((church) => church.status === "verified").length)} label="Verified" dark />
+              <StatCard value={String(submissions.length)} label="Pending" dark />
+            </div>
+            <p className="mt-4 text-sm leading-6 text-brand-100">
+              Built to help visitors, members, pastors, and leaders find accurate church information quickly.
+            </p>
           </div>
         </div>
       </div>
@@ -137,11 +146,17 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
 
       {tab === "directory" ? (
         <div className="space-y-5">
-          <div className="grid gap-3 rounded-[1.75rem] border border-line/80 bg-white p-4 shadow-card md:grid-cols-4">
-            <Field label="Search">
+          <div className="rounded-[1.9rem] border border-line/80 bg-white p-5 shadow-card">
+            <div className="flex flex-col gap-5">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Search Directory</p>
+                <h2 className="mt-2 font-serif text-3xl text-ink">Search for a church near you</h2>
+              </div>
+              <div className="grid gap-3 md:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
+                <Field label="Church, pastor, city, or district">
               <input
-                className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
-                placeholder="Church, pastor, city, district"
+                className="w-full rounded-2xl border border-line bg-surface px-4 py-4 text-base outline-none focus:border-brand-500"
+                placeholder="Start typing here..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -186,6 +201,8 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                 <option value="submitted">Submitted</option>
               </select>
             </Field>
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
@@ -211,10 +228,10 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                 {filtered.map((church) => (
                   <button
                     key={church.id}
-                    className={`w-full rounded-[1.25rem] border p-4 text-left transition ${
+                    className={`w-full rounded-[1.4rem] border p-4 text-left transition ${
                       selectedChurch?.id === church.id
                         ? "border-brand-500 bg-brand-50 shadow-card"
-                        : "border-line/80 bg-surface hover:border-brand-300"
+                        : "border-line/80 bg-surface hover:border-brand-300 hover:bg-white"
                     }`}
                     onClick={() => setSelectedId(church.id)}
                   >
@@ -514,11 +531,11 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
+function StatCard({ value, label, dark = false }: { value: string; label: string; dark?: boolean }) {
   return (
-    <div className="rounded-[1.25rem] bg-white/90 p-4 shadow-card">
-      <p className="text-3xl font-semibold text-ink">{value}</p>
-      <p className="text-sm text-muted">{label}</p>
+    <div className={`rounded-[1.25rem] p-4 shadow-card ${dark ? "bg-white/10 text-white" : "bg-white/90"}`}>
+      <p className={`text-3xl font-semibold ${dark ? "text-white" : "text-ink"}`}>{value}</p>
+      <p className={`text-sm ${dark ? "text-brand-100" : "text-muted"}`}>{label}</p>
     </div>
   );
 }
@@ -535,7 +552,7 @@ function TabButton({
   return (
     <button
       className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
-        active ? "bg-ink text-white" : "text-muted"
+        active ? "bg-pine text-white" : "text-muted"
       }`}
       onClick={onClick}
       type="button"
@@ -565,7 +582,7 @@ function FormField({ label, children }: { label: string; children: ReactNode }) 
 
 function InfoCard({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="rounded-[1.25rem] border border-line/80 bg-surface p-5">
+    <div className="rounded-[1.35rem] border border-line/80 bg-surface p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">{label}</p>
       <div className="mt-3 space-y-1 text-sm leading-7 text-ink">{children}</div>
     </div>
