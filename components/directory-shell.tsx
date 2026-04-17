@@ -135,7 +135,7 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
         </div>
       </div>
 
-      <div className="inline-flex rounded-full border border-line bg-white p-1 shadow-card">
+      <div className="inline-flex rounded-full border border-line bg-white p-1 shadow-card" role="tablist" aria-label="Directory views">
         <TabButton active={tab === "directory"} onClick={() => setTab("directory")}>
           Directory
         </TabButton>
@@ -228,6 +228,8 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                 {filtered.map((church) => (
                   <button
                     key={church.id}
+                    type="button"
+                    aria-pressed={selectedChurch?.id === church.id}
                     className={`w-full rounded-[1.4rem] border p-4 text-left transition ${
                       selectedChurch?.id === church.id
                         ? "border-brand-500 bg-brand-50 shadow-card"
@@ -590,6 +592,8 @@ function TabButton({
 }) {
   return (
     <button
+      role="tab"
+      aria-selected={active}
       className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
         active ? "bg-pine text-white" : "text-muted"
       }`}

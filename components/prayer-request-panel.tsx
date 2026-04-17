@@ -49,6 +49,7 @@ export function PrayerRequestPanel({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
         className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
       >
         {open ? "Close Prayer Form" : "Submit A Prayer Request"}
@@ -56,34 +57,42 @@ export function PrayerRequestPanel({
 
       {open ? (
         <form onSubmit={handleSubmit} className="grid gap-3 rounded-[1.25rem] border border-line/80 bg-surface p-4">
-          <input
-            required
-            placeholder="Your name"
-            value={requesterName}
-            onChange={(event) => setRequesterName(event.target.value)}
-            className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
-          />
-          <input
-            type="email"
-            placeholder="Your email"
-            value={requesterEmail}
-            onChange={(event) => setRequesterEmail(event.target.value)}
-            className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
-          />
-          <input
-            placeholder="Your phone number"
-            value={requesterPhone}
-            onChange={(event) => setRequesterPhone(event.target.value)}
-            className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
-          />
-          <textarea
-            required
-            rows={5}
-            placeholder="Type your prayer request here"
-            value={request}
-            onChange={(event) => setRequest(event.target.value)}
-            className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
-          />
+          <label className="space-y-2">
+            <span className="text-sm font-medium text-ink">Your name</span>
+            <input
+              required
+              value={requesterName}
+              onChange={(event) => setRequesterName(event.target.value)}
+              className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-medium text-ink">Your email</span>
+            <input
+              type="email"
+              value={requesterEmail}
+              onChange={(event) => setRequesterEmail(event.target.value)}
+              className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-medium text-ink">Your phone number</span>
+            <input
+              value={requesterPhone}
+              onChange={(event) => setRequesterPhone(event.target.value)}
+              className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-medium text-ink">Prayer request</span>
+            <textarea
+              required
+              rows={5}
+              value={request}
+              onChange={(event) => setRequest(event.target.value)}
+              className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
+            />
+          </label>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted">Prayer requests are sent privately to the directory back office.</p>
             <button
@@ -95,7 +104,7 @@ export function PrayerRequestPanel({
             </button>
           </div>
           {message ? (
-            <p className="text-sm font-medium text-brand-700">{message}</p>
+            <p className="text-sm font-medium text-brand-700" aria-live="polite">{message}</p>
           ) : null}
         </form>
       ) : null}

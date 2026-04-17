@@ -6,12 +6,17 @@ export default async function LandingPage() {
   const tenants = await getTenants();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-16 sm:px-6 lg:px-8">
+    <main id="main-content" className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full space-y-6">
         <SetupBanner />
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <section>
           <p className="text-sm font-semibold uppercase tracking-[0.35em] text-brand-700">Standalone Product</p>
+          <img
+            src="/aoh-logo.svg"
+            alt="AOH Church of God logo"
+            className="mt-4 h-28 w-28 object-contain sm:h-32 sm:w-32"
+          />
           <h1 className="mt-4 font-serif text-5xl text-ink sm:text-6xl">AOH Directory</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">
             Separate multi-tenant church directory website with tenant-aware routes, district dashboards,
@@ -27,7 +32,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-soft">
+        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-soft" aria-label="Available tenants">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Available Tenants</p>
           <div className="mt-5 space-y-4">
             {tenants.map((tenant) => (

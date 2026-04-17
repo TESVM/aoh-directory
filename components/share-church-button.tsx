@@ -31,12 +31,18 @@ export function ShareChurchButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleShare}
-      className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-    >
-      {message || "Share Church"}
-    </button>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={handleShare}
+        aria-label={`Share ${title}`}
+        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+      >
+        {message || "Share Church"}
+      </button>
+      <span className="sr-only" aria-live="polite">
+        {message}
+      </span>
+    </div>
   );
 }
