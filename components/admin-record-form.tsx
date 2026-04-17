@@ -1,3 +1,9 @@
+"use client";
+
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useFormStatus } from "react-dom";
+import { ActionResult } from "@/app/actions";
 import { Church, Submission, ViewerContext } from "@/lib/types";
 
 type RecordValues = Pick<
@@ -40,11 +46,21 @@ export function AdminRecordForm({
   title: string;
   description: string;
   submitLabel: string;
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<ActionResult>;
 }) {
+  const router = useRouter();
+  const initialState: ActionResult = { ok: false, message: "" };
+  const [state, formAction] = useActionState(async (_state: ActionResult, formData: FormData) => action(formData), initialState);
+
+  useEffect(() => {
+    if (state.ok) {
+      router.refresh();
+    }
+  }, [router, state.ok]);
+
   return (
     <form
-      action={action}
+      action={formAction}
       encType="multipart/form-data"
       className="space-y-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card"
     >
@@ -56,6 +72,19 @@ export function AdminRecordForm({
 
       <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
       <input type="hidden" name={recordIdName} value={recordIdValue} />
+
+      {state.message ? (
+        <div
+          className={`rounded-2xl border px-4 py-3 text-sm ${
+            state.ok
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+          aria-live="polite"
+        >
+          {state.message}
+        </div>
+      ) : null}
 
       <div className="grid gap-5 md:grid-cols-2">
         <Field label="Church name" name="name" defaultValue={values.name} required />
@@ -151,11 +180,23 @@ export function AdminRecordForm({
               ? "You can only edit the church assigned to your login."
             : "Tenant admin access can edit and publish all district records."}
         </p>
-        <button className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white">
-          {submitLabel}
-        </button>
+        <SubmitButton label={submitLabel} />
       </div>
     </form>
+  );
+}
+
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {pending ? "Saving changes..." : label}
+    </button>
   );
 }
 

@@ -379,128 +379,46 @@ export async function reviewSubmissionAction(formData: FormData) {
   revalidatePath(`/${tenantSlug}/admin`);
 }
 
-export async function updateChurchAction(formData: FormData) {
-  const tenantSlug = String(formData.get("tenantSlug") || "");
-  const churchId = String(formData.get("churchId") || "");
-  const payload = readChurchPayload(formData);
+export async function updateChurchAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const tenantSlug = String(formData.get("tenantSlug") || "");
+    const churchId = String(formData.get("churchId") || "");
+    const payload = readChurchPayload(formData);
 
-  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
-  const db = getFirebaseAdminDb();
+    const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
+    const db = getFirebaseAdminDb();
 
-  if (!db) {
-    throw new Error("Firebase admin is not configured.");
-  }
+    if (!db) {
+      throw new Error("Firebase admin is not configured.");
+    }
 
-  const currentChurch = await getChurchByTenantAndId(tenantSlug, churchId);
-  if (!currentChurch) {
-    throw new Error("Church not found.");
-  }
+    const currentChurch = await getChurchByTenantAndId(tenantSlug, churchId);
+    if (!currentChurch) {
+      throw new Error("Church not found.");
+    }
 
-  assertFields(payload);
-  assertRoleScopedDistrict(user, currentChurch.district);
-  assertRoleScopedDistrict(user, payload.district);
-  assertRoleScopedChurch(user, currentChurch.id);
+    assertFields(payload);
+    assertRoleScopedDistrict(user, currentChurch.district);
+    assertRoleScopedDistrict(user, payload.district);
+    assertRoleScopedChurch(user, currentChurch.id);
 
-  const churchImageUrl =
-    (await uploadImageIfProvided(formData, "churchImage", `${tenant.id}/churches/${churchId}/church-photo-${Date.now()}`)) ||
-    payload.churchImageUrl ||
-    currentChurch.churchImageUrl ||
-    "";
-  const pastorImageUrl =
-    (await uploadImageIfProvided(formData, "pastorImage", `${tenant.id}/churches/${churchId}/pastor-photo-${Date.now()}`)) ||
-    payload.pastorImageUrl ||
-    currentChurch.pastorImageUrl ||
-    "";
-  const logoImageUrl =
-    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/churches/${churchId}/logo-${Date.now()}`)) ||
-    payload.logoImageUrl ||
-    currentChurch.logoImageUrl ||
-    "";
+    const churchImageUrl =
+      (await uploadImageIfProvided(formData, "churchImage", `${tenant.id}/churches/${churchId}/church-photo-${Date.now()}`)) ||
+      payload.churchImageUrl ||
+      currentChurch.churchImageUrl ||
+      "";
+    const pastorImageUrl =
+      (await uploadImageIfProvided(formData, "pastorImage", `${tenant.id}/churches/${churchId}/pastor-photo-${Date.now()}`)) ||
+      payload.pastorImageUrl ||
+      currentChurch.pastorImageUrl ||
+      "";
+    const logoImageUrl =
+      (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/churches/${churchId}/logo-${Date.now()}`)) ||
+      payload.logoImageUrl ||
+      currentChurch.logoImageUrl ||
+      "";
 
-  await db.collection("churches").doc(churchId).update({
-    name: payload.name,
-    pastor_name: payload.pastorName,
-    pastor_title: payload.pastorTitle || "Pastor",
-    address: payload.address,
-    city: payload.city,
-    state: payload.state,
-    zip: payload.zip,
-    district: payload.district,
-    phone: payload.phone,
-    email: payload.email,
-    website: payload.website,
-    church_image_url: churchImageUrl,
-    pastor_image_url: pastorImageUrl,
-    logo_image_url: logoImageUrl,
-    service_hours: payload.serviceHours,
-    online_worship_url: payload.onlineWorshipUrl,
-    status: payload.status,
-    source: payload.source,
-    notes: payload.notes,
-    last_updated: new Date().toISOString().slice(0, 10)
-  });
-
-  await db.collection("audit_logs").add({
-    tenant_id: tenant.id,
-    action: "church_updated",
-    church_id: churchId,
-    performed_by: user.uid,
-    created_at: new Date().toISOString()
-  });
-
-  revalidatePath(`/${tenantSlug}`);
-  revalidatePath(`/${tenantSlug}/admin`);
-  revalidatePath(`/${tenantSlug}/admin/church/${churchId}`);
-  revalidatePath(`/${tenantSlug}/church/${churchId}`);
-}
-
-export async function updateSubmissionAction(formData: FormData) {
-  const tenantSlug = String(formData.get("tenantSlug") || "");
-  const submissionId = String(formData.get("submissionId") || "");
-  const payload = readChurchPayload(formData);
-
-  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop"]);
-  const db = getFirebaseAdminDb();
-
-  if (!db) {
-    throw new Error("Firebase admin is not configured.");
-  }
-
-  const currentSubmission = await getSubmissionByTenantAndId(tenantSlug, submissionId);
-  if (!currentSubmission) {
-    throw new Error("Submission not found.");
-  }
-
-  assertFields(payload);
-  assertRoleScopedDistrict(user, currentSubmission.data.district);
-  assertRoleScopedDistrict(user, payload.district);
-
-  const churchImageUrl =
-    (await uploadImageIfProvided(
-      formData,
-      "churchImage",
-      `${tenant.id}/submissions/${submissionId}/church-photo-${Date.now()}`
-    )) ||
-    payload.churchImageUrl ||
-    currentSubmission.data.churchImageUrl ||
-    "";
-  const pastorImageUrl =
-    (await uploadImageIfProvided(
-      formData,
-      "pastorImage",
-      `${tenant.id}/submissions/${submissionId}/pastor-photo-${Date.now()}`
-    )) ||
-    payload.pastorImageUrl ||
-    currentSubmission.data.pastorImageUrl ||
-    "";
-  const logoImageUrl =
-    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/submissions/${submissionId}/logo-${Date.now()}`)) ||
-    payload.logoImageUrl ||
-    currentSubmission.data.logoImageUrl ||
-    "";
-
-  await db.collection("submissions").doc(submissionId).update({
-    data: {
+    await db.collection("churches").doc(churchId).update({
       name: payload.name,
       pastor_name: payload.pastorName,
       pastor_title: payload.pastorTitle || "Pastor",
@@ -520,23 +438,129 @@ export async function updateSubmissionAction(formData: FormData) {
       status: payload.status,
       source: payload.source,
       notes: payload.notes,
-      last_updated: new Date().toISOString().slice(0, 10),
-      location: currentSubmission.data.location,
-      ministries: currentSubmission.data.ministries
+      last_updated: new Date().toISOString().slice(0, 10)
+    });
+
+    await db.collection("audit_logs").add({
+      tenant_id: tenant.id,
+      action: "church_updated",
+      church_id: churchId,
+      performed_by: user.uid,
+      created_at: new Date().toISOString()
+    });
+
+    revalidatePath(`/${tenantSlug}`);
+    revalidatePath(`/${tenantSlug}/admin`);
+    revalidatePath(`/${tenantSlug}/admin/church/${churchId}`);
+    revalidatePath(`/${tenantSlug}/church/${churchId}`);
+
+    return {
+      ok: true,
+      message: "Church changes saved."
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Church changes could not be saved."
+    };
+  }
+}
+
+export async function updateSubmissionAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const tenantSlug = String(formData.get("tenantSlug") || "");
+    const submissionId = String(formData.get("submissionId") || "");
+    const payload = readChurchPayload(formData);
+
+    const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop"]);
+    const db = getFirebaseAdminDb();
+
+    if (!db) {
+      throw new Error("Firebase admin is not configured.");
     }
-  });
 
-  await db.collection("audit_logs").add({
-    tenant_id: tenant.id,
-    action: "submission_updated",
-    submission_id: submissionId,
-    performed_by: user.uid,
-    created_at: new Date().toISOString()
-  });
+    const currentSubmission = await getSubmissionByTenantAndId(tenantSlug, submissionId);
+    if (!currentSubmission) {
+      throw new Error("Submission not found.");
+    }
 
-  revalidatePath(`/${tenantSlug}`);
-  revalidatePath(`/${tenantSlug}/admin`);
-  revalidatePath(`/${tenantSlug}/admin/submission/${submissionId}`);
+    assertFields(payload);
+    assertRoleScopedDistrict(user, currentSubmission.data.district);
+    assertRoleScopedDistrict(user, payload.district);
+
+    const churchImageUrl =
+      (await uploadImageIfProvided(
+        formData,
+        "churchImage",
+        `${tenant.id}/submissions/${submissionId}/church-photo-${Date.now()}`
+      )) ||
+      payload.churchImageUrl ||
+      currentSubmission.data.churchImageUrl ||
+      "";
+    const pastorImageUrl =
+      (await uploadImageIfProvided(
+        formData,
+        "pastorImage",
+        `${tenant.id}/submissions/${submissionId}/pastor-photo-${Date.now()}`
+      )) ||
+      payload.pastorImageUrl ||
+      currentSubmission.data.pastorImageUrl ||
+      "";
+    const logoImageUrl =
+      (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/submissions/${submissionId}/logo-${Date.now()}`)) ||
+      payload.logoImageUrl ||
+      currentSubmission.data.logoImageUrl ||
+      "";
+
+    await db.collection("submissions").doc(submissionId).update({
+      data: {
+        name: payload.name,
+        pastor_name: payload.pastorName,
+        pastor_title: payload.pastorTitle || "Pastor",
+        address: payload.address,
+        city: payload.city,
+        state: payload.state,
+        zip: payload.zip,
+        district: payload.district,
+        phone: payload.phone,
+        email: payload.email,
+        website: payload.website,
+        church_image_url: churchImageUrl,
+        pastor_image_url: pastorImageUrl,
+        logo_image_url: logoImageUrl,
+        service_hours: payload.serviceHours,
+        online_worship_url: payload.onlineWorshipUrl,
+        status: payload.status,
+        source: payload.source,
+        notes: payload.notes,
+        last_updated: new Date().toISOString().slice(0, 10),
+        location: currentSubmission.data.location,
+        ministries: currentSubmission.data.ministries
+      }
+    });
+
+    await db.collection("audit_logs").add({
+      tenant_id: tenant.id,
+      action: "submission_updated",
+      submission_id: submissionId,
+      performed_by: user.uid,
+      created_at: new Date().toISOString()
+    });
+
+    revalidatePath(`/${tenantSlug}`);
+    revalidatePath(`/${tenantSlug}/admin`);
+    revalidatePath(`/${tenantSlug}/admin/submission/${submissionId}`);
+
+    return {
+      ok: true,
+      message: "Submission changes saved."
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Submission changes could not be saved."
+    };
+  }
 }
 
 export async function createManagedUserAction(formData: FormData) {
