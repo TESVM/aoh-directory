@@ -43,7 +43,7 @@ export function AdminRecordForm({
   action: (formData: FormData) => void | Promise<void>;
 }) {
   return (
-    <form action={action} className="space-y-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+    <form action={action} encType="multipart/form-data" className="space-y-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Back Office</p>
         <h1 className="mt-3 font-serif text-4xl text-ink">{title}</h1>

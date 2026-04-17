@@ -171,17 +171,24 @@ async function uploadImageIfProvided(
   storagePath: string
 ) {
   const entry = formData.get(fieldName);
-  if (!(entry instanceof File) || !entry.size) {
+  if (
+    !entry ||
+    typeof entry === "string" ||
+    typeof (entry as File).arrayBuffer !== "function" ||
+    typeof (entry as File).type !== "string" ||
+    !(entry as File).size
+  ) {
     return null;
   }
 
   if (!entry.type.startsWith("image/")) {
-    throw new Error("Only image uploads are allowed.");
+    return null;
   }
 
   const bucket = getFirebaseAdminBucket();
   if (!bucket) {
-    throw new Error("Firebase Storage is not configured.");
+    console.error("Firebase Storage is not configured for upload.");
+    return null;
   }
 
   const extension = entry.name.includes(".") ? entry.name.split(".").pop()?.toLowerCase() : null;
@@ -191,16 +198,21 @@ async function uploadImageIfProvided(
   const buffer = Buffer.from(await entry.arrayBuffer());
   const downloadToken = randomUUID();
 
-  await file.save(buffer, {
-    metadata: {
-      contentType: entry.type,
+  try {
+    await file.save(buffer, {
       metadata: {
-        firebaseStorageDownloadTokens: downloadToken
-      }
-    },
-    resumable: false,
-    public: false
-  });
+        contentType: entry.type,
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken
+        }
+      },
+      resumable: false,
+      public: false
+    });
+  } catch (error) {
+    console.error(`Image upload failed for ${fieldName}`, error);
+    return null;
+  }
 
   return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
 }
