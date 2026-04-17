@@ -1,0 +1,29 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cgGold" x1="140" y1="80" x2="580" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F4E2A0"/>
+      <stop offset="0.55" stop-color="#D0A22D"/>
+      <stop offset="1" stop-color="#8A6208"/>
+    </linearGradient>
+    <linearGradient id="cgSky" x1="210" y1="160" x2="510" y2="508" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6E8ED8"/>
+      <stop offset="0.52" stop-color="#B8D7F3"/>
+      <stop offset="1" stop-color="#FFF8DF"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="720" rx="48" fill="#152856"/>
+  <circle cx="360" cy="360" r="214" fill="url(#cgSky)" stroke="url(#cgGold)" stroke-width="10"/>
+  <circle cx="360" cy="360" r="258" stroke="url(#cgGold)" stroke-width="8" stroke-dasharray="4 14"/>
+  <circle cx="360" cy="360" r="286" stroke="url(#cgGold)" stroke-width="8" fill="none"/>
+  <path d="M365 190V345" stroke="#F6C6D5" stroke-width="18" stroke-linecap="round"/>
+  <path d="M300 255H430" stroke="#F6C6D5" stroke-width="18" stroke-linecap="round"/>
+  <path d="M220 470C286 405 434 405 500 470V512H220V470Z" fill="#243A74" opacity="0.95"/>
+  <path d="M350 353C375 353 392 334 392 314C392 294 375 276 350 276C325 276 308 294 308 314C308 334 325 353 350 353Z" fill="#1A2854"/>
+  <path d="M326 351H374V447H326V351Z" fill="#1A2854"/>
+  <path d="M278 370C300 370 315 354 315 334V323H241V334C241 354 256 370 278 370Z" fill="#1A2854"/>
+  <path d="M258 368H298V451H258V368Z" fill="#1A2854"/>
+  <path d="M458 404C476 404 489 391 489 375V366H427V375C427 391 440 404 458 404Z" fill="#1A2854"/>
+  <path d="M441 402H475V454H441V402Z" fill="#1A2854"/>
+  <text x="360" y="104" text-anchor="middle" fill="url(#cgGold)" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="4">CHOSEN GENERATIONS</text>
+  <text x="360" y="642" text-anchor="middle" fill="url(#cgGold)" font-family="Georgia, serif" font-size="56" font-weight="700" letter-spacing="3">MINISTRIES</text>
+</svg>

@@ -1,0 +1,20 @@
+<svg width="720" height="420" viewBox="0 0 720 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="btGold" x1="193" y1="56" x2="532" y2="294" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE79C"/>
+      <stop offset="0.52" stop-color="#D9B85D"/>
+      <stop offset="1" stop-color="#A77D1D"/>
+    </linearGradient>
+    <linearGradient id="btBlue" x1="78" y1="150" x2="675" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EC8FF"/>
+      <stop offset="1" stop-color="#49B8F2"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" rx="28" fill="#2E3138"/>
+  <path d="M42 310L108 250V108H154V286H200V324H42V310Z" fill="url(#btBlue)"/>
+  <path d="M106 100H150V72H194V100H236V144H194V300H150V144H106V100Z" fill="url(#btGold)"/>
+  <path d="M48 336C130 322 214 316 300 318C214 322 130 334 48 356V336Z" fill="url(#btBlue)"/>
+  <text x="376" y="105" text-anchor="middle" fill="#7ED7FF" font-family="Brush Script MT, Georgia, serif" font-size="64" font-style="italic">Bethesda</text>
+  <text x="474" y="216" text-anchor="middle" fill="url(#btGold)" font-family="Avenir Next, Arial, sans-serif" font-size="120" font-weight="900" letter-spacing="6">TEMPLE</text>
+  <text x="470" y="292" text-anchor="middle" fill="#67D1FF" font-family="Avenir Next, Arial, sans-serif" font-size="46" font-weight="700" letter-spacing="4">A.O.H CHURCH OF GOD</text>
+</svg>

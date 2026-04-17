@@ -1,0 +1,23 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="stGold" x1="176" y1="158" x2="544" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE9B2"/>
+      <stop offset="0.5" stop-color="#D3A447"/>
+      <stop offset="1" stop-color="#9C6D18"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="720" rx="48" fill="#FFFFFF"/>
+  <circle cx="360" cy="360" r="250" fill="#FFF8E7" stroke="#4B1F6F" stroke-width="24"/>
+  <circle cx="360" cy="360" r="214" fill="none" stroke="#4B1F6F" stroke-width="10"/>
+  <path d="M360 188V356" stroke="url(#stGold)" stroke-width="54" stroke-linecap="square"/>
+  <path d="M260 270H460" stroke="url(#stGold)" stroke-width="54" stroke-linecap="square"/>
+  <path d="M160 342C235 256 288 234 360 236C432 234 485 256 560 342C500 334 431 324 360 324C289 324 220 334 160 342Z" fill="#4B1F6F"/>
+  <path d="M360 345C384 345 402 326 402 303C402 280 384 261 360 261C336 261 318 280 318 303C318 326 336 345 360 345Z" fill="#FFF8E7"/>
+  <path d="M340 342H380V424H340V342Z" fill="#4B1F6F"/>
+  <path d="M186 513H534" stroke="#4B1F6F" stroke-width="10" stroke-linecap="round"/>
+  <text x="360" y="188" text-anchor="middle" fill="#4B1F6F" font-family="Georgia, serif" font-size="58" font-weight="700">SHERIFF TEMPLE</text>
+  <text x="360" y="548" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="4">A.O.H. CHURCH OF GOD</text>
+  <text x="245" y="420" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="28" font-weight="700">EST.</text>
+  <text x="475" y="420" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="28" font-weight="700">1930</text>
+  <text x="360" y="492" text-anchor="middle" fill="#1B1A1E" font-family="Avenir Next, Arial, sans-serif" font-size="34" font-weight="800">MARCH 16, 1916</text>
+</svg>

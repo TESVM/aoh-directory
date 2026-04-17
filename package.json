@@ -14,7 +14,8 @@
     "import:churches": "node --env-file=.env.local ./scripts/import-churches-from-csv.mjs",
     "import:html": "node --env-file=.env.local ./scripts/import-churches-from-html.mjs",
     "find:duplicates": "node --env-file=.env.local ./scripts/find-duplicate-churches.mjs",
-    "cleanup:duplicates": "node --env-file=.env.local ./scripts/cleanup-duplicate-churches.mjs"
+    "cleanup:duplicates": "node --env-file=.env.local ./scripts/cleanup-duplicate-churches.mjs",
+    "upsert:roll-call": "node --env-file=.env.local ./scripts/upsert-roll-call-churches.mjs"
   },
   "dependencies": {
     "firebase": "^12.12.0",
