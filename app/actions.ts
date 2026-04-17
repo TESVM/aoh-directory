@@ -2,6 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getFirebaseAdminAuth, getFirebaseAdminBucket, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
   getChurchClaimsByTenant,
@@ -448,6 +449,7 @@ export async function updateChurchAction(formData: FormData) {
   revalidatePath(`/${tenantSlug}/admin`);
   revalidatePath(`/${tenantSlug}/admin/church/${churchId}`);
   revalidatePath(`/${tenantSlug}/church/${churchId}`);
+  redirect(`/${tenantSlug}/admin/church/${churchId}`);
 }
 
 export async function updateSubmissionAction(formData: FormData) {
@@ -530,6 +532,7 @@ export async function updateSubmissionAction(formData: FormData) {
   revalidatePath(`/${tenantSlug}`);
   revalidatePath(`/${tenantSlug}/admin`);
   revalidatePath(`/${tenantSlug}/admin/submission/${submissionId}`);
+  redirect(`/${tenantSlug}/admin/submission/${submissionId}`);
 }
 
 export async function createManagedUserAction(formData: FormData) {
