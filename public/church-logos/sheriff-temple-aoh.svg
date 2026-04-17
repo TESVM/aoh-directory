@@ -1,23 +1,80 @@
-<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="stGold" x1="176" y1="158" x2="544" y2="560" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE9B2"/>
-      <stop offset="0.5" stop-color="#D3A447"/>
-      <stop offset="1" stop-color="#9C6D18"/>
+    <linearGradient id="bgCream" x1="145" y1="145" x2="755" y2="755" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9F1"/>
+      <stop offset="1" stop-color="#F7E9C9"/>
     </linearGradient>
+    <linearGradient id="gold" x1="251" y1="181" x2="650" y2="742" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF2BF"/>
+      <stop offset="0.42" stop-color="#F0CD77"/>
+      <stop offset="0.72" stop-color="#C79036"/>
+      <stop offset="1" stop-color="#8C5C16"/>
+    </linearGradient>
+    <linearGradient id="goldSoft" x1="233" y1="234" x2="667" y2="667" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF4D3"/>
+      <stop offset="1" stop-color="#D29A44"/>
+    </linearGradient>
+    <filter id="shadow" x="96" y="97" width="708" height="709" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="14"/>
+      <feGaussianBlur stdDeviation="16"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.262745 0 0 0 0 0.113725 0 0 0 0 0.352941 0 0 0 0.18 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
   </defs>
-  <rect width="720" height="720" rx="48" fill="#FFFFFF"/>
-  <circle cx="360" cy="360" r="250" fill="#FFF8E7" stroke="#4B1F6F" stroke-width="24"/>
-  <circle cx="360" cy="360" r="214" fill="none" stroke="#4B1F6F" stroke-width="10"/>
-  <path d="M360 188V356" stroke="url(#stGold)" stroke-width="54" stroke-linecap="square"/>
-  <path d="M260 270H460" stroke="url(#stGold)" stroke-width="54" stroke-linecap="square"/>
-  <path d="M160 342C235 256 288 234 360 236C432 234 485 256 560 342C500 334 431 324 360 324C289 324 220 334 160 342Z" fill="#4B1F6F"/>
-  <path d="M360 345C384 345 402 326 402 303C402 280 384 261 360 261C336 261 318 280 318 303C318 326 336 345 360 345Z" fill="#FFF8E7"/>
-  <path d="M340 342H380V424H340V342Z" fill="#4B1F6F"/>
-  <path d="M186 513H534" stroke="#4B1F6F" stroke-width="10" stroke-linecap="round"/>
-  <text x="360" y="188" text-anchor="middle" fill="#4B1F6F" font-family="Georgia, serif" font-size="58" font-weight="700">SHERIFF TEMPLE</text>
-  <text x="360" y="548" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="4">A.O.H. CHURCH OF GOD</text>
-  <text x="245" y="420" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="28" font-weight="700">EST.</text>
-  <text x="475" y="420" text-anchor="middle" fill="#4B1F6F" font-family="Avenir Next, Arial, sans-serif" font-size="28" font-weight="700">1930</text>
-  <text x="360" y="492" text-anchor="middle" fill="#1B1A1E" font-family="Avenir Next, Arial, sans-serif" font-size="34" font-weight="800">MARCH 16, 1916</text>
+
+  <rect width="900" height="900" fill="#FFFFFF"/>
+
+  <g filter="url(#shadow)">
+    <circle cx="450" cy="430" r="292" fill="url(#bgCream)" stroke="#5C245E" stroke-width="26"/>
+    <circle cx="450" cy="430" r="246" fill="none" stroke="#5C245E" stroke-width="9"/>
+
+    <path d="M450 198V397" stroke="url(#gold)" stroke-width="74" stroke-linecap="round"/>
+    <path d="M328 294H572" stroke="url(#gold)" stroke-width="74" stroke-linecap="round"/>
+
+    <path d="M186 426C257 344 319 304 392 300C324 340 271 384 227 452L186 426Z" fill="#5C245E"/>
+    <path d="M714 426C643 344 581 304 508 300C576 340 629 384 673 452L714 426Z" fill="#5C245E"/>
+
+    <path d="M220 426C300 356 356 328 450 326C399 344 351 386 303 459L220 426Z" fill="url(#goldSoft)" opacity="0.95"/>
+    <path d="M680 426C600 356 544 328 450 326C501 344 549 386 597 459L680 426Z" fill="url(#goldSoft)" opacity="0.95"/>
+
+    <path d="M243 456C315 401 367 379 450 378C404 394 356 432 311 494L243 456Z" fill="#5C245E"/>
+    <path d="M657 456C585 401 533 379 450 378C496 394 544 432 589 494L657 456Z" fill="#5C245E"/>
+
+    <path d="M287 506C349 465 393 448 450 449C414 462 378 489 343 531L287 506Z" fill="url(#goldSoft)"/>
+    <path d="M613 506C551 465 507 448 450 449C486 462 522 489 557 531L613 506Z" fill="url(#goldSoft)"/>
+
+    <path d="M450 350C482 350 509 378 509 412C509 439 493 461 469 471V533H431V471C407 461 391 439 391 412C391 378 418 350 450 350Z" fill="#FFF9F1"/>
+    <path d="M431 462H469V560H431V462Z" fill="#5C245E"/>
+
+    <path d="M450 426C498 426 537 462 546 507C527 495 500 489 450 489C400 489 373 495 354 507C363 462 402 426 450 426Z" fill="#5C245E"/>
+    <path d="M426 498H474L492 548C472 563 456 570 450 570C444 570 428 563 408 548L426 498Z" fill="#FFF9F1"/>
+    <path d="M438 550L450 588L462 550H438Z" fill="#E1C07B"/>
+
+    <circle cx="323" cy="447" r="10" fill="#FFFDF8"/>
+    <circle cx="577" cy="447" r="10" fill="#FFFDF8"/>
+    <circle cx="323" cy="447" r="6" fill="#5C245E"/>
+    <circle cx="577" cy="447" r="6" fill="#5C245E"/>
+
+    <text x="450" y="208" text-anchor="middle" fill="#FFF8E8" font-family="Georgia, serif" font-size="74" font-weight="700" letter-spacing="2" stroke="#5C245E" stroke-width="8" paint-order="stroke fill">
+      SHERIFF TEMPLE
+    </text>
+
+    <text x="450" y="678" text-anchor="middle" fill="#FFF8E8" font-family="Georgia, serif" font-size="58" font-weight="700" letter-spacing="2" stroke="#5C245E" stroke-width="8" paint-order="stroke fill">
+      A.O.H. CHURCH OF GOD
+    </text>
+
+    <text x="320" y="463" text-anchor="middle" fill="#5C245E" font-family="Avenir Next, Arial, sans-serif" font-size="31" font-weight="700">
+      EST.
+    </text>
+    <text x="580" y="463" text-anchor="middle" fill="#5C245E" font-family="Avenir Next, Arial, sans-serif" font-size="31" font-weight="700">
+      1930
+    </text>
+    <text x="450" y="592" text-anchor="middle" fill="#3E2318" font-family="Avenir Next, Arial, sans-serif" font-size="48" font-weight="800">
+      MARCH 16, 1916
+    </text>
+  </g>
 </svg>
