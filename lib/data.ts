@@ -1,6 +1,6 @@
 import { QueryDocumentSnapshot, Timestamp } from "firebase-admin/firestore";
 import { cookies } from "next/headers";
-import { Church, PrayerRequest, Submission, Tenant, UserRecord, ViewerContext } from "@/lib/types";
+import { Church, ChurchClaim, PrayerRequest, Submission, Tenant, UserRecord, ViewerContext } from "@/lib/types";
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import { seededChurches, seededSubmissions, seededTenants, seededUsers } from "@/lib/seed";
 
@@ -71,6 +71,22 @@ type FirestoreUser = {
   church_id?: string;
   name: string;
   email: string;
+};
+
+type FirestoreChurchClaim = {
+  tenant_id: string;
+  church_id: string;
+  church_name: string;
+  claimant_name: string;
+  claimant_email: string;
+  claimant_phone?: string;
+  role_at_church: string;
+  verification_notes: string;
+  created_at?: string | Timestamp;
+  status: "pending" | "approved" | "rejected";
+  reviewed_at?: string | Timestamp;
+  approved_user_uid?: string;
+  temporary_password?: string;
 };
 
 function normalizeDate(value?: string | Timestamp) {
@@ -180,6 +196,26 @@ function mapUserDoc(uid: string, data: FirestoreUser): UserRecord {
     churchId: data.church_id,
     name: data.name,
     email: data.email
+  };
+}
+
+function mapChurchClaimDoc(doc: QueryDocumentSnapshot<FirestoreChurchClaim>, tenantId: string): ChurchClaim {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    tenantId,
+    churchId: data.church_id,
+    churchName: data.church_name,
+    claimantName: data.claimant_name,
+    claimantEmail: data.claimant_email,
+    claimantPhone: data.claimant_phone,
+    roleAtChurch: data.role_at_church,
+    verificationNotes: data.verification_notes,
+    createdAt: normalizeDate(data.created_at),
+    status: data.status,
+    reviewedAt: normalizeDate(data.reviewed_at),
+    approvedUserUid: data.approved_user_uid,
+    temporaryPassword: data.temporary_password
   };
 }
 
@@ -311,6 +347,21 @@ export async function getPrayerRequestsByTenant(tenantSlug: string) {
   try {
     const snapshot = await db.collection("prayer_requests").where("tenant_id", "==", tenant.id).get();
     return snapshot.docs.map((doc) => mapPrayerRequestDoc(doc as QueryDocumentSnapshot<FirestorePrayerRequest>, tenant.id));
+  } catch {
+    return [];
+  }
+}
+
+export async function getChurchClaimsByTenant(tenantSlug: string) {
+  const tenant = await getTenantBySlug(tenantSlug);
+  if (!tenant) return [];
+
+  const db = getFirebaseAdminDb();
+  if (!db) return [];
+
+  try {
+    const snapshot = await db.collection("church_claims").where("tenant_id", "==", tenant.id).get();
+    return snapshot.docs.map((doc) => mapChurchClaimDoc(doc as QueryDocumentSnapshot<FirestoreChurchClaim>, tenant.id));
   } catch {
     return [];
   }

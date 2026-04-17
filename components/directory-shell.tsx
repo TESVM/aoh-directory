@@ -406,12 +406,10 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                       <p>Source: {selectedChurch.source}</p>
                       <p>Last updated: {selectedChurch.lastUpdated}</p>
                     </InfoCard>
-                    <InfoCard label="Map Preview">
-                      <p>
-                        Lat/Lng: {selectedChurch.location.lat}, {selectedChurch.location.lng}
-                      </p>
+                    <InfoCard label="Map & Directions">
+                      <p>Use the button below to open this church in Google Maps.</p>
                       <p className="text-sm text-muted">
-                        Mapbox cluster view plugs into this record shape without changing the route model.
+                        Google Maps will show the church location and help you get there.
                       </p>
                       <a
                         href={buildGoogleMapsDirectionsUrl(selectedChurch)}

@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { getFirebaseAdminAuth, getFirebaseAdminBucket, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
+  getChurchClaimsByTenant,
   findPotentialDuplicates,
   getChurchByTenantAndId,
   getChurchesByTenant,
@@ -28,6 +29,11 @@ export type CommunicationResult = {
 };
 
 export type PrayerRequestResult = {
+  ok: boolean;
+  message: string;
+};
+
+export type ChurchClaimResult = {
   ok: boolean;
   message: string;
 };
@@ -66,6 +72,16 @@ type PrayerPayload = {
   request: string;
 };
 
+type ChurchClaimPayload = {
+  churchId: string;
+  churchName: string;
+  claimantName: string;
+  claimantEmail: string;
+  claimantPhone?: string;
+  roleAtChurch: string;
+  verificationNotes: string;
+};
+
 function normalizePhoneNumber(phone?: string) {
   if (!phone) return null;
   const digits = phone.replace(/\D/g, "");
@@ -78,6 +94,10 @@ function unique<T>(values: T[]) {
   return [...new Set(values)];
 }
 
+function generateTemporaryPassword() {
+  return `AOH!${randomUUID().replace(/-/g, "").slice(0, 10)}a`;
+}
+
 function parseMultilineList(value: FormDataEntryValue | null) {
   return String(value || "")
     .split("\n")
@@ -88,6 +108,12 @@ function parseMultilineList(value: FormDataEntryValue | null) {
 function assertPrayerPayload(payload: PrayerPayload) {
   if (!payload.requesterName || !payload.request) {
     throw new Error("Your name and prayer request are required.");
+  }
+}
+
+function assertChurchClaimPayload(payload: ChurchClaimPayload) {
+  if (!payload.churchId || !payload.churchName || !payload.claimantName || !payload.claimantEmail || !payload.roleAtChurch) {
+    throw new Error("Church, name, email, and role are required.");
   }
 }
 
@@ -563,6 +589,151 @@ export async function createManagedUserAction(formData: FormData) {
   });
 
   revalidatePath(`/${tenantSlug}/admin`);
+}
+
+export async function submitChurchClaimAction(
+  tenantSlug: string,
+  payload: ChurchClaimPayload
+): Promise<ChurchClaimResult> {
+  const tenant = await getTenantBySlug(tenantSlug);
+  const db = getFirebaseAdminDb();
+
+  if (!tenant || !db) {
+    return {
+      ok: false,
+      message: "Church claiming is not configured yet."
+    };
+  }
+
+  try {
+    assertChurchClaimPayload(payload);
+
+    const existingClaims = await getChurchClaimsByTenant(tenantSlug);
+    const duplicatePendingClaim = existingClaims.find(
+      (claim) =>
+        claim.churchId === payload.churchId &&
+        claim.claimantEmail.toLowerCase() === payload.claimantEmail.toLowerCase() &&
+        claim.status === "pending"
+    );
+
+    if (duplicatePendingClaim) {
+      return {
+        ok: false,
+        message: "A claim request with this email is already waiting for review."
+      };
+    }
+
+    await db.collection("church_claims").add({
+      tenant_id: tenant.id,
+      church_id: payload.churchId,
+      church_name: payload.churchName,
+      claimant_name: payload.claimantName,
+      claimant_email: payload.claimantEmail.toLowerCase(),
+      claimant_phone: payload.claimantPhone || "",
+      role_at_church: payload.roleAtChurch,
+      verification_notes: payload.verificationNotes || "",
+      created_at: new Date().toISOString(),
+      status: "pending"
+    });
+
+    revalidatePath(`/${tenantSlug}/church/${payload.churchId}`);
+    revalidatePath(`/${tenantSlug}/admin`);
+
+    return {
+      ok: true,
+      message: "Your request has been sent for review. Admin will verify that you are connected to this church before giving access."
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unable to submit church claim."
+    };
+  }
+}
+
+export async function reviewChurchClaimAction(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") || "");
+  const claimId = String(formData.get("claimId") || "");
+  const decision = String(formData.get("decision") || "");
+
+  const { tenant, user } = await requireTenantRole(tenantSlug, ["admin"]);
+  const auth = getFirebaseAdminAuth();
+  const db = getFirebaseAdminDb();
+
+  if (!auth || !db) {
+    throw new Error("Firebase admin is not configured.");
+  }
+
+  const claimRef = db.collection("church_claims").doc(claimId);
+  const claimDoc = await claimRef.get();
+
+  if (!claimDoc.exists) {
+    throw new Error("Claim request not found.");
+  }
+
+  const claim = (await getChurchClaimsByTenant(tenantSlug)).find((item) => item.id === claimId);
+  if (!claim) {
+    throw new Error("Claim request could not be loaded.");
+  }
+
+  if (decision === "reject") {
+    await claimRef.update({
+      status: "rejected",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.uid
+    });
+  } else if (decision === "approve") {
+    const church = await getChurchByTenantAndId(tenantSlug, claim.churchId);
+    if (!church) {
+      throw new Error("The church tied to this claim could not be found.");
+    }
+
+    try {
+      await auth.getUserByEmail(claim.claimantEmail);
+      throw new Error("That email already has a Firebase login. Review the account before approving.");
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes("There is no user record")) {
+        throw error;
+      }
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    const authUser = await auth.createUser({
+      email: claim.claimantEmail,
+      password: temporaryPassword,
+      displayName: claim.claimantName
+    });
+
+    await db.collection("users").doc(authUser.uid).set({
+      tenant_id: tenant.id,
+      role: "pastor",
+      district: church.district || null,
+      church_id: church.id,
+      name: claim.claimantName,
+      email: claim.claimantEmail
+    });
+
+    await claimRef.update({
+      status: "approved",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user.uid,
+      approved_user_uid: authUser.uid,
+      temporary_password: temporaryPassword
+    });
+  } else {
+    throw new Error("Unknown claim decision.");
+  }
+
+  await db.collection("audit_logs").add({
+    tenant_id: tenant.id,
+    action: `church_claim_${decision}`,
+    church_claim_id: claimId,
+    performed_by: user.uid,
+    created_at: new Date().toISOString()
+  });
+
+  revalidatePath(`/${tenantSlug}/admin`);
+  revalidatePath(`/${tenantSlug}/church/${claim.churchId}`);
 }
 
 export async function submitPrayerRequestAction(

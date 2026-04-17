@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { ClaimChurchPanel } from "@/components/claim-church-panel";
 import { PrayerRequestPanel } from "@/components/prayer-request-panel";
 import { ShareChurchButton } from "@/components/share-church-button";
 import { SiteHeader } from "@/components/site-header";
@@ -168,12 +169,10 @@ export default async function ChurchProfilePage({
                 )}
               </ProfileCard>
 
-              <ProfileCard title="Map Preview">
-                <p>
-                  Coordinates: {church.location.lat}, {church.location.lng}
-                </p>
+              <ProfileCard title="Map & Directions">
+                <p>Use the button below to open this church in Google Maps.</p>
                 <p className="text-muted">
-                  Production Mapbox clustered view can center on this church and reuse the same record shape.
+                  Google Maps will show the church location and help you get there.
                 </p>
                 <a
                   href={directionsUrl}
@@ -207,6 +206,9 @@ export default async function ChurchProfilePage({
               </ProfileCard>
               <ProfileCard title="Prayer Request">
                 <PrayerRequestPanel tenantSlug={tenant.slug} churchId={church.id} churchName={church.name} />
+              </ProfileCard>
+              <ProfileCard title="Claim This Church">
+                <ClaimChurchPanel tenantSlug={tenant.slug} churchId={church.id} churchName={church.name} />
               </ProfileCard>
             </div>
           </div>

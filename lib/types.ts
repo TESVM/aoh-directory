@@ -65,6 +65,23 @@ export type PrayerRequest = {
   status: "new" | "reviewed";
 };
 
+export type ChurchClaim = {
+  id: string;
+  tenantId: string;
+  churchId: string;
+  churchName: string;
+  claimantName: string;
+  claimantEmail: string;
+  claimantPhone?: string;
+  roleAtChurch: string;
+  verificationNotes: string;
+  createdAt: string;
+  status: "pending" | "approved" | "rejected";
+  reviewedAt?: string;
+  approvedUserUid?: string;
+  temporaryPassword?: string;
+};
+
 export type UserRecord = {
   uid: string;
   tenantId: string;

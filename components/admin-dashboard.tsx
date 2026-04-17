@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { createManagedUserAction, reviewSubmissionAction } from "@/app/actions";
+import { createManagedUserAction, reviewChurchClaimAction, reviewSubmissionAction } from "@/app/actions";
 import { CommunicationsCenter } from "@/components/communications-center";
-import { Church, PrayerRequest, Submission, UserRecord, ViewerContext } from "@/lib/types";
+import { Church, ChurchClaim, PrayerRequest, Submission, UserRecord, ViewerContext } from "@/lib/types";
 import { badgeTone } from "@/lib/utils";
 
 export function AdminDashboard({
@@ -10,7 +10,8 @@ export function AdminDashboard({
   submissions,
   duplicateMap,
   users,
-  prayerRequests
+  prayerRequests,
+  churchClaims
 }: {
   viewer: ViewerContext;
   churches: Church[];
@@ -18,6 +19,7 @@ export function AdminDashboard({
   duplicateMap: Record<string, Church[]>;
   users: UserRecord[];
   prayerRequests: PrayerRequest[];
+  churchClaims: ChurchClaim[];
 }) {
   if (viewer.role === "public") {
     return (
@@ -31,9 +33,8 @@ export function AdminDashboard({
   }
 
   const pendingSubmissions = submissions.filter((submission) => submission.status === "pending");
-  const recentlyUpdated = [...churches]
-    .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))
-    .slice(0, 8);
+  const recentlyUpdated = [...churches].sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
+  const pendingClaims = churchClaims.filter((claim) => claim.status === "pending");
 
   return (
     <div className="space-y-8">
@@ -49,11 +50,13 @@ export function AdminDashboard({
             title="Review new churches"
             detail={`${pendingSubmissions.length} waiting`}
             description="Open a submitted church, correct any mistakes, then approve it."
+            href={`/${viewer.tenant.slug}/admin#submissions`}
           />
           <QuickAction
             title="Fix live directory listings"
             detail={`${churches.length} in your scope`}
             description="Open a church card below, update the information, and save."
+            href={`/${viewer.tenant.slug}/admin#churches`}
           />
           <QuickAction
             title="Check the public site"
@@ -63,6 +66,86 @@ export function AdminDashboard({
           />
         </div>
       </section>
+
+      {viewer.role === "admin" ? (
+        <section id="claims" className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Pastor Claim Requests</p>
+              <h2 className="mt-3 font-serif text-3xl text-ink">Approve only after verification</h2>
+              <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
+                A pastor or church leader can request access from the public church page. Admin should verify the person first,
+                then approve the request. Approval creates a pastor login for that church only.
+              </p>
+            </div>
+            <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
+              {pendingClaims.length} waiting
+            </span>
+          </div>
+          <div className="mt-5 space-y-4">
+            {churchClaims.length ? (
+              churchClaims
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .map((claim) => (
+                  <div key={claim.id} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-semibold text-ink">{claim.churchName}</h3>
+                        <p className="text-sm text-muted">
+                          {claim.claimantName} • {claim.roleAtChurch} • {claim.createdAt}
+                        </p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(claim.status === "approved" ? "verified" : claim.status === "rejected" ? "submitted" : "pending")}`}>
+                        {claim.status}
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-1 text-sm text-ink">
+                      <p>Email: {claim.claimantEmail}</p>
+                      <p>Phone: {claim.claimantPhone || "Not given"}</p>
+                      <p>Verification notes: {claim.verificationNotes || "No notes given."}</p>
+                    </div>
+                    {claim.status === "pending" ? (
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        <form action={reviewChurchClaimAction}>
+                          <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
+                          <input type="hidden" name="claimId" value={claim.id} />
+                          <input type="hidden" name="decision" value="approve" />
+                          <button className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white">
+                            Approve Claim
+                          </button>
+                        </form>
+                        <form action={reviewChurchClaimAction}>
+                          <input type="hidden" name="tenantSlug" value={viewer.tenant.slug} />
+                          <input type="hidden" name="claimId" value={claim.id} />
+                          <input type="hidden" name="decision" value="reject" />
+                          <button className="rounded-full border border-claret/20 bg-claret/5 px-4 py-2 text-sm font-semibold text-claret">
+                            Reject Claim
+                          </button>
+                        </form>
+                        <Link
+                          href={`/${viewer.tenant.slug}/admin/church/${claim.churchId}`}
+                          prefetch={false}
+                          className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink"
+                        >
+                          Open Church
+                        </Link>
+                      </div>
+                    ) : null}
+                    {claim.status === "approved" ? (
+                      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+                        Pastor login created. Temporary password: <span className="font-semibold">{claim.temporaryPassword || "Saved in Firebase review log"}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+            ) : (
+              <div className="rounded-[1.4rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+                No church claim requests have been submitted yet.
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
 
       {viewer.role === "admin" ? (
         <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
@@ -159,7 +242,7 @@ export function AdminDashboard({
       ) : null}
 
       {viewer.role === "admin" ? (
-        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
+        <section id="submissions" className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Prayer Requests</p>
@@ -211,7 +294,7 @@ export function AdminDashboard({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
+        <section id="churches" className="rounded-[2rem] border border-line/80 bg-white p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">New Churches Waiting</p>
@@ -302,7 +385,7 @@ export function AdminDashboard({
               <h3 className="mt-2 font-serif text-2xl text-ink">Open a church and fix it</h3>
             </div>
             <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
-              {recentlyUpdated.length} shown
+              {recentlyUpdated.length} churches
             </span>
           </div>
           <div className="mt-5 space-y-4">
@@ -341,11 +424,6 @@ export function AdminDashboard({
                 </div>
               </div>
             ))}
-            {churches.length > recentlyUpdated.length ? (
-              <p className="text-sm text-muted">
-                Showing the most recently updated churches first. Open more records by editing from this list after future updates.
-              </p>
-            ) : null}
           </div>
         </section>
       </div>
