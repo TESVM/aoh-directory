@@ -130,6 +130,11 @@ export function AdminRecordForm({
           <div className="mt-4 rounded-2xl border border-brand-100 bg-white px-4 py-3 text-sm text-muted">
             Upload image files here or paste image links below. If you add both, the new uploaded file will replace the link.
           </div>
+          <div className="mt-3 rounded-2xl border border-dashed border-line bg-white/80 px-4 py-3 text-sm leading-6 text-muted">
+            <p className="font-semibold text-ink">Accepted upload files:</p>
+            <p>PNG, JPG, JPEG, WEBP, and GIF files work best for photos and logos.</p>
+            <p>If you have an SVG logo, paste the logo link in the field above instead of uploading the file.</p>
+          </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <Field
               label="Church photo link"
