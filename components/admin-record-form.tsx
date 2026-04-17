@@ -43,7 +43,11 @@ export function AdminRecordForm({
   action: (formData: FormData) => void | Promise<void>;
 }) {
   return (
-    <form action={action} className="space-y-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
+    <form
+      action={action}
+      encType="multipart/form-data"
+      className="space-y-8 rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card"
+    >
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Back Office</p>
         <h1 className="mt-3 font-serif text-4xl text-ink">{title}</h1>
@@ -95,7 +99,7 @@ export function AdminRecordForm({
             Add a church photo, pastor photo, and church logo so visitors can connect with the church faster.
           </p>
           <div className="mt-4 rounded-2xl border border-brand-100 bg-white px-4 py-3 text-sm text-muted">
-            Direct file upload is temporarily unavailable. Paste image links below. Direct image links from your website, Google Drive public files, or another image host will work.
+            Upload image files here or paste image links below. If you add both, the new uploaded file will replace the link.
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <Field
@@ -115,20 +119,23 @@ export function AdminRecordForm({
             />
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <ImagePreviewTile
+            <ImageUploadField
               label="Church photo"
+              name="churchImage"
               currentUrl={values.churchImageUrl}
-              helpText="Use an exterior or sanctuary photo link."
+              helpText="Use an exterior or sanctuary photo."
             />
-            <ImagePreviewTile
+            <ImageUploadField
               label="Pastor photo"
+              name="pastorImage"
               currentUrl={values.pastorImageUrl}
-              helpText="Use a clear portrait photo link."
+              helpText="Use a clear portrait photo."
             />
-            <ImagePreviewTile
+            <ImageUploadField
               label="Church logo"
+              name="churchLogo"
               currentUrl={values.logoImageUrl}
-              helpText="Square logo links work best."
+              helpText="Square logos work best."
             />
           </div>
         </div>
@@ -216,12 +223,14 @@ function TextArea({
   );
 }
 
-function ImagePreviewTile({
+function ImageUploadField({
   label,
+  name,
   currentUrl,
   helpText
 }: {
   label: string;
+  name: "churchImage" | "pastorImage" | "churchLogo";
   currentUrl?: string;
   helpText?: string;
 }) {
@@ -239,6 +248,12 @@ function ImagePreviewTile({
           No image uploaded yet
         </div>
       )}
+      <input
+        name={name}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="block w-full text-sm text-ink file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:font-semibold file:text-white"
+      />
       {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}
     </div>
   );
