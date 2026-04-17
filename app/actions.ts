@@ -137,9 +137,9 @@ function readChurchPayload(formData: FormData): ChurchPayload {
     phone: String(formData.get("phone") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     website: String(formData.get("website") || "").trim(),
-    churchImageUrl: undefined,
-    pastorImageUrl: undefined,
-    logoImageUrl: undefined,
+    churchImageUrl: String(formData.get("churchImageUrl") || "").trim() || undefined,
+    pastorImageUrl: String(formData.get("pastorImageUrl") || "").trim() || undefined,
+    logoImageUrl: String(formData.get("logoImageUrl") || "").trim() || undefined,
     serviceHours: parseMultilineList(formData.get("serviceHours")),
     onlineWorshipUrl: String(formData.get("onlineWorshipUrl") || "").trim(),
     status: (String(formData.get("status") || "pending").trim() as ChurchPayload["status"]),
@@ -403,14 +403,17 @@ export async function updateChurchAction(formData: FormData) {
 
   const churchImageUrl =
     (await uploadImageIfProvided(formData, "churchImage", `${tenant.id}/churches/${churchId}/church-photo-${Date.now()}`)) ||
+    payload.churchImageUrl ||
     currentChurch.churchImageUrl ||
     "";
   const pastorImageUrl =
     (await uploadImageIfProvided(formData, "pastorImage", `${tenant.id}/churches/${churchId}/pastor-photo-${Date.now()}`)) ||
+    payload.pastorImageUrl ||
     currentChurch.pastorImageUrl ||
     "";
   const logoImageUrl =
     (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/churches/${churchId}/logo-${Date.now()}`)) ||
+    payload.logoImageUrl ||
     currentChurch.logoImageUrl ||
     "";
 
@@ -479,6 +482,7 @@ export async function updateSubmissionAction(formData: FormData) {
       "churchImage",
       `${tenant.id}/submissions/${submissionId}/church-photo-${Date.now()}`
     )) ||
+    payload.churchImageUrl ||
     currentSubmission.data.churchImageUrl ||
     "";
   const pastorImageUrl =
@@ -487,10 +491,12 @@ export async function updateSubmissionAction(formData: FormData) {
       "pastorImage",
       `${tenant.id}/submissions/${submissionId}/pastor-photo-${Date.now()}`
     )) ||
+    payload.pastorImageUrl ||
     currentSubmission.data.pastorImageUrl ||
     "";
   const logoImageUrl =
     (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/submissions/${submissionId}/logo-${Date.now()}`)) ||
+    payload.logoImageUrl ||
     currentSubmission.data.logoImageUrl ||
     "";
 

@@ -94,6 +94,26 @@ export function AdminRecordForm({
           <p className="mt-2 text-sm leading-6 text-muted">
             Upload a church photo, pastor photo, and church logo so visitors can connect with the church faster.
           </p>
+          <div className="mt-4 rounded-2xl border border-brand-100 bg-white px-4 py-3 text-sm text-muted">
+            If file upload is not available yet, paste image links below. Direct image links from your website, Google Drive public files, or another image host will work.
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <Field
+              label="Church photo link"
+              name="churchImageUrl"
+              defaultValue={values.churchImageUrl}
+            />
+            <Field
+              label="Pastor photo link"
+              name="pastorImageUrl"
+              defaultValue={values.pastorImageUrl}
+            />
+            <Field
+              label="Church logo link"
+              name="logoImageUrl"
+              defaultValue={values.logoImageUrl}
+            />
+          </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <ImageUploadField
               label="Church photo"
