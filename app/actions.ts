@@ -3,7 +3,7 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getFirebaseAdminAuth, getFirebaseAdminBucket, getFirebaseAdminDb } from "@/lib/firebase/admin";
+import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import {
   getChurchClaimsByTenant,
   findPotentialDuplicates,
@@ -164,58 +164,6 @@ function assertRoleScopedChurch(
   if (actor.role === "pastor" && actor.churchId !== churchId) {
     throw new Error("Pastors can only manage their assigned church.");
   }
-}
-
-async function uploadImageIfProvided(
-  formData: FormData,
-  fieldName: "churchImage" | "pastorImage" | "churchLogo",
-  storagePath: string
-) {
-  const entry = formData.get(fieldName);
-  if (
-    !entry ||
-    typeof entry === "string" ||
-    typeof (entry as File).arrayBuffer !== "function" ||
-    typeof (entry as File).type !== "string" ||
-    !(entry as File).size
-  ) {
-    return null;
-  }
-
-  if (!entry.type.startsWith("image/")) {
-    return null;
-  }
-
-  const bucket = getFirebaseAdminBucket();
-  if (!bucket) {
-    console.error("Firebase Storage is not configured for upload.");
-    return null;
-  }
-
-  const extension = entry.name.includes(".") ? entry.name.split(".").pop()?.toLowerCase() : null;
-  const safeExtension = extension && /^[a-z0-9]+$/i.test(extension) ? extension : "jpg";
-  const objectPath = `${storagePath}.${safeExtension}`;
-  const file = bucket.file(objectPath);
-  const buffer = Buffer.from(await entry.arrayBuffer());
-  const downloadToken = randomUUID();
-
-  try {
-    await file.save(buffer, {
-      metadata: {
-        contentType: entry.type,
-        metadata: {
-          firebaseStorageDownloadTokens: downloadToken
-        }
-      },
-      resumable: false,
-      public: false
-    });
-  } catch (error) {
-    console.error(`Image upload failed for ${fieldName}`, error);
-    return null;
-  }
-
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
 }
 
 export async function submitChurchSubmissionAction(
@@ -401,21 +349,9 @@ export async function updateChurchAction(formData: FormData) {
   assertRoleScopedDistrict(user, payload.district);
   assertRoleScopedChurch(user, currentChurch.id);
 
-  const churchImageUrl =
-    (await uploadImageIfProvided(formData, "churchImage", `${tenant.id}/churches/${churchId}/church-photo-${Date.now()}`)) ||
-    payload.churchImageUrl ||
-    currentChurch.churchImageUrl ||
-    "";
-  const pastorImageUrl =
-    (await uploadImageIfProvided(formData, "pastorImage", `${tenant.id}/churches/${churchId}/pastor-photo-${Date.now()}`)) ||
-    payload.pastorImageUrl ||
-    currentChurch.pastorImageUrl ||
-    "";
-  const logoImageUrl =
-    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/churches/${churchId}/logo-${Date.now()}`)) ||
-    payload.logoImageUrl ||
-    currentChurch.logoImageUrl ||
-    "";
+  const churchImageUrl = payload.churchImageUrl || currentChurch.churchImageUrl || "";
+  const pastorImageUrl = payload.pastorImageUrl || currentChurch.pastorImageUrl || "";
+  const logoImageUrl = payload.logoImageUrl || currentChurch.logoImageUrl || "";
 
   await db.collection("churches").doc(churchId).update({
     name: payload.name,
@@ -476,29 +412,9 @@ export async function updateSubmissionAction(formData: FormData) {
   assertRoleScopedDistrict(user, currentSubmission.data.district);
   assertRoleScopedDistrict(user, payload.district);
 
-  const churchImageUrl =
-    (await uploadImageIfProvided(
-      formData,
-      "churchImage",
-      `${tenant.id}/submissions/${submissionId}/church-photo-${Date.now()}`
-    )) ||
-    payload.churchImageUrl ||
-    currentSubmission.data.churchImageUrl ||
-    "";
-  const pastorImageUrl =
-    (await uploadImageIfProvided(
-      formData,
-      "pastorImage",
-      `${tenant.id}/submissions/${submissionId}/pastor-photo-${Date.now()}`
-    )) ||
-    payload.pastorImageUrl ||
-    currentSubmission.data.pastorImageUrl ||
-    "";
-  const logoImageUrl =
-    (await uploadImageIfProvided(formData, "churchLogo", `${tenant.id}/submissions/${submissionId}/logo-${Date.now()}`)) ||
-    payload.logoImageUrl ||
-    currentSubmission.data.logoImageUrl ||
-    "";
+  const churchImageUrl = payload.churchImageUrl || currentSubmission.data.churchImageUrl || "";
+  const pastorImageUrl = payload.pastorImageUrl || currentSubmission.data.pastorImageUrl || "";
+  const logoImageUrl = payload.logoImageUrl || currentSubmission.data.logoImageUrl || "";
 
   await db.collection("submissions").doc(submissionId).update({
     data: {
