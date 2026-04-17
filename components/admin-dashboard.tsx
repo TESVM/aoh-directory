@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { createManagedUserAction, reviewChurchClaimAction, reviewSubmissionAction } from "@/app/actions";
 import { CommunicationsCenter } from "@/components/communications-center";
@@ -21,6 +24,8 @@ export function AdminDashboard({
   prayerRequests: PrayerRequest[];
   churchClaims: ChurchClaim[];
 }) {
+  const [churchSearch, setChurchSearch] = useState("");
+
   if (viewer.role === "public") {
     return (
       <div className="rounded-[2rem] border border-claret/20 bg-claret/5 p-8">
@@ -35,6 +40,23 @@ export function AdminDashboard({
   const pendingSubmissions = submissions.filter((submission) => submission.status === "pending");
   const recentlyUpdated = [...churches].sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
   const pendingClaims = churchClaims.filter((claim) => claim.status === "pending");
+  const normalizedChurchSearch = churchSearch.trim().toLowerCase();
+  const filteredChurches = normalizedChurchSearch
+    ? recentlyUpdated.filter((church) =>
+        [
+          church.name,
+          church.city,
+          church.state,
+          church.pastorName,
+          church.pastorTitle,
+          church.district
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedChurchSearch)
+      )
+    : recentlyUpdated;
 
   return (
     <div className="space-y-8">
@@ -189,7 +211,7 @@ export function AdminDashboard({
                   className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none focus:border-brand-700"
                 >
                   <option value="">Select a church for Pastor</option>
-                  {churches.map((church) => (
+                  {filteredChurches.map((church) => (
                     <option key={church.id} value={church.id}>
                       {church.name} - {church.city}, {church.state}
                     </option>
@@ -385,11 +407,32 @@ export function AdminDashboard({
               <h3 className="mt-2 font-serif text-2xl text-ink">Open a church and fix it</h3>
             </div>
             <span className="rounded-full bg-surface px-3 py-1 text-sm font-semibold text-ink">
-              {recentlyUpdated.length} churches
+              {filteredChurches.length} churches
             </span>
           </div>
+          <div className="mt-5 rounded-[1.4rem] border border-line/80 bg-surface p-4">
+            <label htmlFor="church-search" className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-700">
+              Find a church fast
+            </label>
+            <input
+              id="church-search"
+              type="text"
+              value={churchSearch}
+              onChange={(event) => setChurchSearch(event.target.value)}
+              placeholder="Search by church name, city, pastor, state, or district"
+              className="mt-3 w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none transition focus:border-brand-700"
+            />
+            <p className="mt-2 text-sm text-muted">
+              Start typing to narrow the church list and the Pastor church dropdown.
+            </p>
+          </div>
           <div className="mt-5 space-y-4">
-            {recentlyUpdated.map((church) => (
+            {filteredChurches.length === 0 ? (
+              <div className="rounded-[1.4rem] border border-line/80 bg-surface p-5 text-sm text-muted">
+                No churches match that search yet. Try a church name, city, pastor, or district number.
+              </div>
+            ) : null}
+            {filteredChurches.map((church) => (
               <div key={church.id} className="rounded-[1.4rem] border border-line/80 bg-surface p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
