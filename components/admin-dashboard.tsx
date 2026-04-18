@@ -25,6 +25,8 @@ export function AdminDashboard({
   churchClaims: ChurchClaim[];
 }) {
   const [churchSearch, setChurchSearch] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
 
   if (viewer.role === "public") {
     return (
@@ -41,9 +43,9 @@ export function AdminDashboard({
   const recentlyUpdated = [...churches].sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
   const pendingClaims = churchClaims.filter((claim) => claim.status === "pending");
   const normalizedChurchSearch = churchSearch.trim().toLowerCase();
-  const filteredChurches = normalizedChurchSearch
-    ? recentlyUpdated.filter((church) =>
-        [
+  const filteredChurches = recentlyUpdated.filter((church) => {
+    const matchesSearch = normalizedChurchSearch
+      ? [
           church.name,
           church.city,
           church.state,
@@ -55,8 +57,14 @@ export function AdminDashboard({
           .join(" ")
           .toLowerCase()
           .includes(normalizedChurchSearch)
-      )
-    : recentlyUpdated;
+      : true;
+    const matchesState = selectedState ? church.state === selectedState : true;
+    const matchesDistrict = selectedDistrict ? church.district === selectedDistrict : true;
+
+    return matchesSearch && matchesState && matchesDistrict;
+  });
+  const stateOptions = [...new Set(recentlyUpdated.map((church) => church.state).filter(Boolean))].sort();
+  const districtOptions = uniqueDistricts(recentlyUpdated);
 
   return (
     <div className="space-y-8">
@@ -425,6 +433,44 @@ export function AdminDashboard({
             <p className="mt-2 text-sm text-muted">
               Start typing to narrow the church list and the Pastor church dropdown.
             </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="church-state-filter" className="text-sm font-medium text-ink">
+                  Filter by state
+                </label>
+                <select
+                  id="church-state-filter"
+                  value={selectedState}
+                  onChange={(event) => setSelectedState(event.target.value)}
+                  className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none transition focus:border-brand-700"
+                >
+                  <option value="">All states</option>
+                  {stateOptions.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="church-district-filter" className="text-sm font-medium text-ink">
+                  Filter by district
+                </label>
+                <select
+                  id="church-district-filter"
+                  value={selectedDistrict}
+                  onChange={(event) => setSelectedDistrict(event.target.value)}
+                  className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none transition focus:border-brand-700"
+                >
+                  <option value="">All districts</option>
+                  {districtOptions.map((district) => (
+                    <option key={district} value={district}>
+                      District {district}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
           <div className="mt-5 space-y-4">
             {filteredChurches.length === 0 ? (
