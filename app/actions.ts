@@ -212,7 +212,20 @@ async function uploadImageIfProvided(
     });
   } catch (error) {
     console.error(`Image upload failed for ${fieldName}`, error);
-    return null;
+    const errorText =
+      error instanceof Error
+        ? `${error.message} ${error.stack || ""}`
+        : typeof error === "string"
+          ? error
+          : JSON.stringify(error);
+
+    if (errorText.includes('"code": 412') || errorText.toLowerCase().includes("necessary permissions")) {
+      throw new Error(
+        "Image upload is not ready yet. Firebase Storage still needs to be linked in the Firebase console. Use the image link field for now, or finish the bucket-link step first."
+      );
+    }
+
+    throw new Error("Image upload failed. Try a PNG, JPG, JPEG, WEBP, or GIF file, or use the image link field instead.");
   }
 
   return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;

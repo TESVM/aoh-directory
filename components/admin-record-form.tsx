@@ -134,6 +134,9 @@ export function AdminRecordForm({
             <p className="font-semibold text-ink">Accepted upload files:</p>
             <p>PNG, JPG, JPEG, WEBP, and GIF files work best for photos and logos.</p>
             <p>If you have an SVG logo, paste the logo link in the field above instead of uploading the file.</p>
+            <p className="mt-2">
+              If upload still fails, the church can keep working by pasting image links until Firebase finishes linking the Storage bucket.
+            </p>
           </div>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <Field
