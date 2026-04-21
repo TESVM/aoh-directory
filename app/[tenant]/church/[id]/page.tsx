@@ -28,6 +28,7 @@ export default async function ChurchProfilePage({
 
   const directionsUrl = buildGoogleMapsDirectionsUrl(church.address, church.city, church.state, church.zip);
   const publicProfileUrl = `/${tenant.slug}/church/${church.id}`;
+  const pastorLine = [church.pastorTitle, church.pastorName].filter(Boolean).join(" ") || "Leadership details pending";
 
   return (
     <>
@@ -41,9 +42,11 @@ export default async function ChurchProfilePage({
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
                     {church.status}
                   </span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
-                    District {church.district}
-                  </span>
+                  {church.district ? (
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
+                      District {church.district}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="mt-5 flex flex-wrap items-center gap-4">
                   {church.logoImageUrl ? (
@@ -55,9 +58,7 @@ export default async function ChurchProfilePage({
                   ) : null}
                   <div>
                     <h1 className="font-serif text-5xl leading-tight sm:text-6xl">{church.name}</h1>
-                    <p className="mt-4 text-xl text-brand-100">
-                      {church.pastorTitle} {church.pastorName}
-                    </p>
+                    <p className="mt-4 text-xl text-brand-100">{pastorLine}</p>
                   </div>
                 </div>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-brand-100">
@@ -70,9 +71,11 @@ export default async function ChurchProfilePage({
                   <Link href={`/${tenant.slug}`} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100">
                     Back To Directory
                   </Link>
-                  <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-pine">
-                    District Dashboard
-                  </Link>
+                  {church.district ? (
+                    <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-pine">
+                      District Dashboard
+                    </Link>
+                  ) : null}
                   <a
                     href={directionsUrl}
                     target="_blank"
@@ -125,18 +128,22 @@ export default async function ChurchProfilePage({
               </ProfileCard>
 
               <ProfileCard title="Church Information">
-                <a
-                  href={directionsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
-                >
-                  <p>{church.address}</p>
-                  <p>
-                    {church.city}, {church.state} {church.zip}
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
-                </a>
+                {church.address ? (
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
+                  >
+                    <p>{church.address}</p>
+                    <p>
+                      {church.city}, {church.state} {church.zip}
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
+                  </a>
+                ) : (
+                  <p>Street address still needs confirmation for this church.</p>
+                )}
                 <p>{formatPhone(church.phone)}</p>
                 <p>{church.email || "Email not listed"}</p>
                 <p>{formatWebsite(church.website)}</p>
@@ -170,18 +177,24 @@ export default async function ChurchProfilePage({
               </ProfileCard>
 
               <ProfileCard title="Map & Directions">
-                <p>Use the button below to open this church in Google Maps.</p>
-                <p className="text-muted">
-                  Google Maps will show the church location and help you get there.
-                </p>
-                <a
-                  href={directionsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-                >
-                  Open Directions
-                </a>
+                {church.address ? (
+                  <>
+                    <p>Use the button below to open this church in Google Maps.</p>
+                    <p className="text-muted">
+                      Google Maps will show the church location and help you get there.
+                    </p>
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                    >
+                      Open Directions
+                    </a>
+                  </>
+                ) : (
+                  <p>Directions are unavailable until a street address is confirmed.</p>
+                )}
               </ProfileCard>
             </div>
 

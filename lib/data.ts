@@ -95,6 +95,39 @@ function normalizeDate(value?: string | Timestamp) {
   return value.toDate().toISOString().slice(0, 10);
 }
 
+function normalizeChurchKey(church: Pick<Church, "name" | "city" | "state">) {
+  return [church.name, church.city, church.state]
+    .join("|")
+    .toLowerCase()
+    .replace(/apostolic overcoming holy|church of god|aoh|apostolic|church|temple/g, " ")
+    .replace(/[^a-z0-9|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function mergeChurchCollections(primary: Church[], fallback: Church[]) {
+  const byId = new Map<string, Church>();
+  const byKey = new Map<string, Church>();
+
+  for (const church of primary) {
+    byId.set(church.id, church);
+    byKey.set(normalizeChurchKey(church), church);
+  }
+
+  for (const church of fallback) {
+    if (byId.has(church.id)) continue;
+    if (byKey.has(normalizeChurchKey(church))) continue;
+    byId.set(church.id, church);
+  }
+
+  return [...byId.values()].sort(
+    (left, right) =>
+      left.state.localeCompare(right.state) ||
+      left.city.localeCompare(right.city) ||
+      left.name.localeCompare(right.name)
+  );
+}
+
 function mapChurchDoc(doc: QueryDocumentSnapshot<FirestoreChurch>): Church {
   const data = doc.data();
   return {
@@ -251,13 +284,15 @@ export async function getChurchesByTenant(tenantSlug: string) {
   if (!tenant) return [];
 
   const db = getFirebaseAdminDb();
-  if (!db) return seededChurches.filter((church) => church.tenantId === tenant.id);
+  const fallbackChurches = seededChurches.filter((church) => church.tenantId === tenant.id);
+  if (!db) return fallbackChurches;
 
   try {
     const snapshot = await db.collection("churches").where("tenant_id", "==", tenant.id).get();
-    return snapshot.docs.map((doc) => mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>));
+    const firestoreChurches = snapshot.docs.map((doc) => mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>));
+    return mergeChurchCollections(firestoreChurches, fallbackChurches);
   } catch {
-    return seededChurches.filter((church) => church.tenantId === tenant.id);
+    return fallbackChurches;
   }
 }
 

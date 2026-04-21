@@ -1,29 +1,105 @@
 <svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cgGold" x1="140" y1="80" x2="580" y2="640" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F4E2A0"/>
-      <stop offset="0.55" stop-color="#D0A22D"/>
-      <stop offset="1" stop-color="#8A6208"/>
+    <linearGradient id="cgGold" x1="120" y1="80" x2="612" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFF1B0"/>
+      <stop offset="38%" stop-color="#E0B33A"/>
+      <stop offset="72%" stop-color="#A87408"/>
+      <stop offset="100%" stop-color="#6B4600"/>
     </linearGradient>
-    <linearGradient id="cgSky" x1="210" y1="160" x2="510" y2="508" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6E8ED8"/>
-      <stop offset="0.52" stop-color="#B8D7F3"/>
-      <stop offset="1" stop-color="#FFF8DF"/>
+    <linearGradient id="cgGoldSoft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF5C9"/>
+      <stop offset="100%" stop-color="#C88B13"/>
     </linearGradient>
+    <radialGradient id="cgSky" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(412 256) rotate(134.575) scale(304.002)">
+      <stop offset="0%" stop-color="#EFF9FF"/>
+      <stop offset="28%" stop-color="#D1ECF8"/>
+      <stop offset="52%" stop-color="#76B9E5"/>
+      <stop offset="78%" stop-color="#3D6FAF"/>
+      <stop offset="100%" stop-color="#243A78"/>
+    </radialGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <path id="topArc" d="M 126 232 A 238 238 0 0 1 594 232"/>
+    <path id="bottomArc" d="M 578 494 A 230 230 0 0 1 142 494"/>
   </defs>
-  <rect width="720" height="720" rx="48" fill="#152856"/>
-  <circle cx="360" cy="360" r="214" fill="url(#cgSky)" stroke="url(#cgGold)" stroke-width="10"/>
-  <circle cx="360" cy="360" r="258" stroke="url(#cgGold)" stroke-width="8" stroke-dasharray="4 14"/>
-  <circle cx="360" cy="360" r="286" stroke="url(#cgGold)" stroke-width="8" fill="none"/>
-  <path d="M365 190V345" stroke="#F6C6D5" stroke-width="18" stroke-linecap="round"/>
-  <path d="M300 255H430" stroke="#F6C6D5" stroke-width="18" stroke-linecap="round"/>
-  <path d="M220 470C286 405 434 405 500 470V512H220V470Z" fill="#243A74" opacity="0.95"/>
-  <path d="M350 353C375 353 392 334 392 314C392 294 375 276 350 276C325 276 308 294 308 314C308 334 325 353 350 353Z" fill="#1A2854"/>
-  <path d="M326 351H374V447H326V351Z" fill="#1A2854"/>
-  <path d="M278 370C300 370 315 354 315 334V323H241V334C241 354 256 370 278 370Z" fill="#1A2854"/>
-  <path d="M258 368H298V451H258V368Z" fill="#1A2854"/>
-  <path d="M458 404C476 404 489 391 489 375V366H427V375C427 391 440 404 458 404Z" fill="#1A2854"/>
-  <path d="M441 402H475V454H441V402Z" fill="#1A2854"/>
-  <text x="360" y="104" text-anchor="middle" fill="url(#cgGold)" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="4">CHOSEN GENERATIONS</text>
-  <text x="360" y="642" text-anchor="middle" fill="url(#cgGold)" font-family="Georgia, serif" font-size="56" font-weight="700" letter-spacing="3">MINISTRIES</text>
+
+  <rect width="720" height="720" fill="#102A66"/>
+
+  <g stroke="url(#cgGold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M170 262C143 246 136 214 154 186C164 216 181 232 207 242"/>
+    <path d="M189 218C179 190 187 164 212 144C212 176 222 198 241 216"/>
+    <path d="M219 186C214 156 228 129 257 111C252 145 259 171 276 194"/>
+    <path d="M552 262C579 246 586 214 568 186C558 216 541 232 515 242"/>
+    <path d="M533 218C543 190 535 164 510 144C510 176 500 198 481 216"/>
+    <path d="M503 186C508 156 494 129 465 111C470 145 463 171 446 194"/>
+    <path d="M197 508C169 520 152 545 150 582C173 562 196 553 221 553"/>
+    <path d="M230 527C207 547 199 574 206 605C225 585 245 575 269 574"/>
+    <path d="M523 508C551 520 568 545 570 582C547 562 524 553 499 553"/>
+    <path d="M490 527C513 547 521 574 514 605C495 585 475 575 451 574"/>
+  </g>
+
+  <g fill="url(#cgGold)" opacity="0.98">
+    <path d="M227 120C244 127 259 140 273 157C255 158 239 153 223 142C226 136 227 129 227 120Z"/>
+    <path d="M493 120C476 127 461 140 447 157C465 158 481 153 497 142C494 136 493 129 493 120Z"/>
+    <path d="M143 286C158 279 176 278 196 281C183 293 168 299 150 300C149 296 147 291 143 286Z"/>
+    <path d="M577 286C562 279 544 278 524 281C537 293 552 299 570 300C571 296 573 291 577 286Z"/>
+    <path d="M169 557C185 550 202 549 222 553C208 565 191 572 172 572C172 567 171 562 169 557Z"/>
+    <path d="M551 557C535 550 518 549 498 553C512 565 529 572 548 572C548 567 549 562 551 557Z"/>
+  </g>
+
+  <circle cx="360" cy="360" r="210" fill="url(#cgSky)" stroke="url(#cgGoldSoft)" stroke-width="8"/>
+  <circle cx="360" cy="360" r="226" stroke="url(#cgGold)" stroke-width="8"/>
+
+  <g opacity="0.82" fill="white">
+    <circle cx="238" cy="206" r="2.2"/>
+    <circle cx="255" cy="236" r="1.5"/>
+    <circle cx="275" cy="220" r="1.6"/>
+    <circle cx="291" cy="255" r="1.8"/>
+    <circle cx="230" cy="275" r="1.4"/>
+    <circle cx="260" cy="293" r="1.7"/>
+    <circle cx="284" cy="309" r="1.6"/>
+    <circle cx="220" cy="322" r="1.2"/>
+    <circle cx="246" cy="338" r="1.6"/>
+    <circle cx="272" cy="351" r="1.5"/>
+  </g>
+
+  <path d="M361 204V412" stroke="#FFD6E0" stroke-width="18" stroke-linecap="round" filter="url(#softGlow)"/>
+  <path d="M294 272H428" stroke="#FFD6E0" stroke-width="18" stroke-linecap="round" filter="url(#softGlow)"/>
+  <path d="M232 263H491" stroke="white" stroke-opacity="0.55" stroke-width="3"/>
+  <path d="M230 306H470" stroke="white" stroke-opacity="0.35" stroke-width="2"/>
+  <path d="M414 214H572" stroke="white" stroke-opacity="0.75" stroke-width="3"/>
+
+  <path d="M188 490C243 424 304 404 361 404C418 404 479 424 534 490V527H188V490Z" fill="#2C86C6"/>
+  <path d="M196 505C250 451 305 438 361 438C417 438 472 451 526 505V527H196V505Z" fill="#14549C"/>
+  <path d="M219 532C255 476 307 452 362 452C417 452 469 476 505 532H219Z" fill="#0F2967"/>
+
+  <path d="M249 506C282 435 323 404 363 404C405 404 447 435 478 506H249Z" fill="#102A66"/>
+  <path d="M351 356C367 356 379 344 379 329C379 314 367 302 351 302C336 302 324 314 324 329C324 344 336 356 351 356Z" fill="#122357"/>
+  <path d="M339 352H363V450H339V352Z" fill="#122357"/>
+  <path d="M360 358L342 388H378L360 358Z" fill="#122357"/>
+  <path d="M348 300L330 318L344 322L360 302L376 322L390 318L372 300H348Z" fill="#122357"/>
+
+  <path d="M274 410C287 410 297 399 297 386C297 373 287 362 274 362C261 362 251 373 251 386C251 399 261 410 274 410Z" fill="#122357"/>
+  <path d="M264 404H283V485H264V404Z" fill="#122357"/>
+  <path d="M274 404L248 440H300L274 404Z" fill="#122357"/>
+  <path d="M274 366L250 383L263 387L274 374L285 387L298 383L274 366Z" fill="#122357"/>
+  <path d="M246 448L232 456L242 460L250 452L260 467L269 462L259 447L282 446L282 438L258 438L252 419L244 423L250 440L236 444L246 448Z" fill="#122357"/>
+
+  <path d="M447 444C459 444 469 434 469 421C469 408 459 398 447 398C434 398 424 408 424 421C424 434 434 444 447 444Z" fill="#122357"/>
+  <path d="M438 439H456V500H438V439Z" fill="#122357"/>
+  <path d="M447 438L422 465H472L447 438Z" fill="#122357"/>
+  <path d="M447 402L423 418L436 422L447 410L458 422L471 418L447 402Z" fill="#122357"/>
+  <path d="M469 394L482 404L474 409L469 404L463 416L456 412L462 400L446 397L447 389L463 393L467 378L474 381L470 394H469Z" fill="#122357"/>
+
+  <text fill="url(#cgGold)" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="700" letter-spacing="2">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">Chosen Generations</textPath>
+  </text>
+  <text fill="url(#cgGold)" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-weight="700" letter-spacing="2.5">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">Ministries</textPath>
+  </text>
 </svg>

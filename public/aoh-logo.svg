@@ -1,38 +1,153 @@
 <svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F7E39A"/>
-      <stop offset="50%" stop-color="#C99712"/>
-      <stop offset="100%" stop-color="#8D6207"/>
+    <linearGradient id="goldMain" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF1B8"/>
+      <stop offset="38%" stop-color="#E0B84A"/>
+      <stop offset="68%" stop-color="#B47E16"/>
+      <stop offset="100%" stop-color="#8D5F06"/>
     </linearGradient>
-    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F8F8FB"/>
-      <stop offset="100%" stop-color="#D0D2DA"/>
+    <linearGradient id="goldSoft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF7DA"/>
+      <stop offset="100%" stop-color="#C28B19"/>
+    </linearGradient>
+    <linearGradient id="silverRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FAFBFE"/>
+      <stop offset="50%" stop-color="#E8EAF1"/>
+      <stop offset="100%" stop-color="#C7CBD6"/>
     </linearGradient>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#161616" flood-opacity="0.18"/>
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#1A1A1A" flood-opacity="0.18"/>
     </filter>
-    <path id="topArc" d="M 118 196 A 245 245 0 0 1 602 196"/>
-    <path id="bottomArc" d="M 602 524 A 245 245 0 0 1 118 524"/>
+    <path id="topArc" d="M 120 206 A 240 240 0 0 1 600 206"/>
+    <path id="bottomArc" d="M 600 514 A 240 240 0 0 1 120 514"/>
+    <linearGradient id="purpleFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8A4AD1"/>
+      <stop offset="100%" stop-color="#5B2390"/>
+    </linearGradient>
   </defs>
 
-  <rect width="720" height="720" rx="48" fill="#FFFFFF"/>
-
   <g filter="url(#shadow)">
-    <circle cx="360" cy="360" r="274" stroke="url(#silver)" stroke-width="26" fill="none"/>
-    <path d="M360 82V638" stroke="url(#gold)" stroke-width="66" stroke-linecap="square"/>
-    <path d="M118 286H602" stroke="url(#gold)" stroke-width="66" stroke-linecap="square"/>
+    <circle cx="360" cy="360" r="280" fill="white"/>
+    <circle cx="360" cy="360" r="274" stroke="url(#silverRing)" stroke-width="26" fill="none"/>
   </g>
 
-  <circle cx="360" cy="360" r="248" stroke="#EEEAF6" stroke-width="12" fill="none"/>
+  <g opacity="0.98">
+    <path d="M360 44L391 44L391 676L360 676L329 676L329 44L360 44Z" fill="url(#goldMain)"/>
+    <path d="M74 328L646 328L646 391L74 391L74 328Z" fill="url(#goldMain)"/>
+    <path d="M341 44H379V676H341V44Z" fill="url(#goldSoft)" opacity="0.62"/>
+    <path d="M74 346H646V373H74V346Z" fill="url(#goldSoft)" opacity="0.52"/>
+  </g>
 
-  <text fill="#1B1A1E" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="2.2">
+  <circle cx="360" cy="360" r="247" fill="white" stroke="#ECEEF5" stroke-width="10"/>
+
+  <path
+    d="M360 196
+    C333 166 286 140 226 132
+    C180 126 145 138 120 162
+    C148 170 173 181 196 196
+    C168 201 144 215 123 237
+    C162 240 195 248 224 262
+    C202 274 185 290 172 311
+    C218 311 255 303 284 286
+    C300 305 323 319 352 326
+    L368 326
+    C397 319 420 305 436 286
+    C465 303 502 311 548 311
+    C535 290 518 274 496 262
+    C525 248 558 240 597 237
+    C576 215 552 201 524 196
+    C547 181 572 170 600 162
+    C575 138 540 126 494 132
+    C434 140 387 166 360 196Z"
+    fill="#3D2D1F"
+  />
+  <path
+    d="M360 210
+    C337 184 296 161 241 154
+    C205 149 175 157 150 173
+    C176 180 201 192 223 208
+    C194 213 171 226 154 243
+    C193 247 224 258 251 272
+    C285 259 309 239 328 214
+    C340 215 349 218 360 226
+    C371 218 380 215 392 214
+    C411 239 435 259 469 272
+    C496 258 527 247 566 243
+    C549 226 526 213 497 208
+    C519 192 544 180 570 173
+    C545 157 515 149 479 154
+    C424 161 383 184 360 210Z"
+    fill="#4E3A25"
+  />
+  <path
+    d="M272 204
+    C308 194 340 199 360 212
+    C380 199 412 194 448 204
+    C420 213 390 227 360 251
+    C330 227 300 213 272 204Z"
+    fill="#E8E1D2"
+  />
+  <path
+    d="M327 257
+    C338 249 350 242 360 239
+    C370 242 382 249 393 257
+    C389 278 380 295 369 309
+    H351
+    C340 295 331 278 327 257Z"
+    fill="#C89A2E"
+  />
+  <path
+    d="M332 248
+    C339 243 349 238 360 235
+    C371 238 381 243 388 248
+    C381 256 371 260 360 260
+    C349 260 339 256 332 248Z"
+    fill="#D8A93B"
+  />
+  <path
+    d="M351 266
+    L339 286
+    L350 284
+    L343 299
+    L360 292
+    L377 299
+    L370 284
+    L381 286
+    L369 266H351Z"
+    fill="#2B2016"
+  />
+
+  <text fill="#2A1E12" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="2.6">
     <textPath href="#topArc" startOffset="50%" text-anchor="middle">APOSTOLIC OVERCOMING HOLY</textPath>
   </text>
-  <text fill="#1B1A1E" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="2.2">
+  <text fill="#2A1E12" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="2.6">
     <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">CHURCH OF GOD, INC.</textPath>
   </text>
 
-  <text x="360" y="425" fill="#5A2390" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="136" font-weight="900" text-anchor="middle" letter-spacing="8" stroke="#32114E" stroke-width="6">A.O.H.</text>
-  <text x="360" y="475" fill="#1B1A1E" font-family="Avenir Next, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="6" text-anchor="middle">MARCH 16, 1916</text>
+  <text
+    x="360"
+    y="442"
+    fill="url(#purpleFace)"
+    font-family="Avenir Next, Segoe UI, Arial, sans-serif"
+    font-size="124"
+    font-weight="900"
+    letter-spacing="6"
+    text-anchor="middle"
+    stroke="#43206E"
+    stroke-width="6"
+  >
+    A.O.H.
+  </text>
+  <text
+    x="360"
+    y="488"
+    fill="#3A2E20"
+    font-family="Avenir Next, Segoe UI, Arial, sans-serif"
+    font-size="24"
+    font-weight="800"
+    letter-spacing="5"
+    text-anchor="middle"
+  >
+    MARCH 16, 1916
+  </text>
 </svg>

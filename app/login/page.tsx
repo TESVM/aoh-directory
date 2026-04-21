@@ -18,11 +18,13 @@ export default async function LoginPage({
         <div className="grid gap-8 rounded-[2rem] border border-line/80 bg-white p-8 shadow-soft lg:grid-cols-[1fr_0.9fr]">
         <section>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-700">Firebase Auth</p>
-          <img
-            src="/aoh-logo.svg"
-            alt="AOH Church of God logo"
-            className="mt-4 h-24 w-24 object-contain"
-          />
+          <div className="mt-4 flex h-32 w-32 items-center justify-center rounded-[1.6rem] border border-line/80 bg-surface p-4 shadow-card">
+            <img
+              src="/aoh-logo.svg"
+              alt="AOH Church of God logo"
+              className="h-full w-full object-contain"
+            />
+          </div>
           <h1 className="mt-4 font-serif text-5xl text-ink">Administrator sign in</h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
             Sign in with a Firebase Authentication email/password account that also has a matching

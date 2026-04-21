@@ -12,11 +12,13 @@ export default async function LandingPage() {
         <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <section>
           <p className="text-sm font-semibold uppercase tracking-[0.35em] text-brand-700">Standalone Product</p>
-          <img
-            src="/aoh-logo.svg"
-            alt="AOH Church of God logo"
-            className="mt-4 h-28 w-28 object-contain sm:h-32 sm:w-32"
-          />
+          <div className="mt-4 flex h-40 w-40 items-center justify-center rounded-[1.8rem] border border-line/80 bg-white p-4 shadow-card sm:h-52 sm:w-52 sm:p-5">
+            <img
+              src="/aoh-logo.svg"
+              alt="AOH Church of God logo"
+              className="h-full w-full object-contain"
+            />
+          </div>
           <h1 className="mt-4 font-serif text-5xl text-ink sm:text-6xl">AOH Directory</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">
             Separate multi-tenant church directory website with tenant-aware routes, district dashboards,

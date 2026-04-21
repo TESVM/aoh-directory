@@ -51,6 +51,7 @@ export function AdminRecordForm({
   const router = useRouter();
   const initialState: ActionResult = { ok: false, message: "" };
   const [state, formAction] = useActionState(async (_state: ActionResult, formData: FormData) => action(formData), initialState);
+  const districtIsRequired = viewer.role !== "admin";
 
   useEffect(() => {
     if (state.ok) {
@@ -88,7 +89,17 @@ export function AdminRecordForm({
 
       <div className="grid gap-5 md:grid-cols-2">
         <Field label="Church name" name="name" defaultValue={values.name} required />
-        <Field label="District" name="district" defaultValue={values.district} required />
+        <Field
+          label="District"
+          name="district"
+          defaultValue={values.district}
+          required={districtIsRequired}
+          helpText={
+            districtIsRequired
+              ? "District is required for district-scoped editors."
+              : "Admin can leave this blank temporarily when the district is still being verified."
+          }
+        />
         <Field label="Pastor name" name="pastorName" defaultValue={values.pastorName} required />
         <Field label="Pastor title" name="pastorTitle" defaultValue={values.pastorTitle} />
         <Field label="Street address" name="address" defaultValue={values.address} required className="md:col-span-2" />
@@ -214,7 +225,8 @@ function Field({
   defaultValue,
   type = "text",
   required = false,
-  className = ""
+  className = "",
+  helpText
 }: {
   label: string;
   name: keyof RecordValues | "zip";
@@ -222,6 +234,7 @@ function Field({
   type?: string;
   required?: boolean;
   className?: string;
+  helpText?: string;
 }) {
   return (
     <div className={`space-y-2 ${className}`.trim()}>
@@ -236,6 +249,7 @@ function Field({
         required={required}
         className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-ink outline-none ring-0 transition focus:border-brand-700"
       />
+      {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}
     </div>
   );
 }

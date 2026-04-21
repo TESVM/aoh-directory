@@ -70,7 +70,10 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
     [allChurches]
   );
   const districts = useMemo(
-    () => [...new Set(allChurches.map((church) => church.district))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    () =>
+      [...new Set(allChurches.map((church) => church.district).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true })
+      ),
     [allChurches]
   );
 
@@ -249,10 +252,12 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                       {church.city}, {church.state}
                     </p>
                     <p className="mt-1 text-sm text-ink">
-                      {church.pastorTitle} {church.pastorName}
+                      {[church.pastorTitle, church.pastorName].filter(Boolean).join(" ") || "Leadership details pending"}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge tone="bg-stone-100 text-stone-800">District {church.district}</Badge>
+                      <Badge tone="bg-stone-100 text-stone-800">
+                        {church.district ? `District ${church.district}` : "District pending"}
+                      </Badge>
                       <Badge tone={badgeTone(church.status)}>{church.status}</Badge>
                     </div>
                   </button>
@@ -274,7 +279,9 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                     <div>
                       <div className="flex flex-wrap gap-2">
                         <Badge tone={badgeTone(selectedChurch.status)}>{selectedChurch.status}</Badge>
-                        <Badge tone="bg-stone-100 text-stone-800">District {selectedChurch.district}</Badge>
+                        <Badge tone="bg-stone-100 text-stone-800">
+                          {selectedChurch.district ? `District ${selectedChurch.district}` : "District pending"}
+                        </Badge>
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-4">
                         {selectedChurch.logoImageUrl ? (
@@ -287,7 +294,8 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                         <div>
                           <h2 className="font-serif text-3xl text-ink">{selectedChurch.name}</h2>
                           <p className="mt-2 text-lg text-muted">
-                            {selectedChurch.pastorTitle} {selectedChurch.pastorName}
+                            {[selectedChurch.pastorTitle, selectedChurch.pastorName].filter(Boolean).join(" ") ||
+                              "Leadership details pending"}
                           </p>
                         </div>
                       </div>
@@ -300,13 +308,15 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                       >
                         Open Profile
                       </Link>
-                      <Link
-                        href={`/${tenant.slug}/district/${selectedChurch.district}`}
-                        prefetch={false}
-                        className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink"
-                      >
-                        District View
-                      </Link>
+                      {selectedChurch.district ? (
+                        <Link
+                          href={`/${tenant.slug}/district/${selectedChurch.district}`}
+                          prefetch={false}
+                          className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink"
+                        >
+                          District View
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
 
@@ -359,18 +369,22 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                       </div>
                     </InfoCard>
                     <InfoCard label="Address">
-                      <a
-                        href={buildGoogleMapsDirectionsUrl(selectedChurch)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
-                      >
-                        <p>{selectedChurch.address}</p>
-                        <p>
-                          {selectedChurch.city}, {selectedChurch.state} {selectedChurch.zip}
-                        </p>
-                        <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
-                      </a>
+                      {selectedChurch.address ? (
+                        <a
+                          href={buildGoogleMapsDirectionsUrl(selectedChurch)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
+                        >
+                          <p>{selectedChurch.address}</p>
+                          <p>
+                            {selectedChurch.city}, {selectedChurch.state} {selectedChurch.zip}
+                          </p>
+                          <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
+                        </a>
+                      ) : (
+                        <p>Street address still needs confirmation for this church.</p>
+                      )}
                     </InfoCard>
                     <InfoCard label="Contact">
                       <p>{formatPhone(selectedChurch.phone)}</p>
