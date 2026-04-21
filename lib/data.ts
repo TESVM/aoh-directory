@@ -105,6 +105,45 @@ function normalizeChurchKey(church: Pick<Church, "name" | "city" | "state">) {
     .trim();
 }
 
+function hasLocation(location?: Church["location"]) {
+  return Boolean(location && (location.lat || location.lng));
+}
+
+function preferString(primary?: string, fallback?: string) {
+  return String(primary || "").trim() ? primary : fallback;
+}
+
+function preferArray<T>(primary?: T[], fallback?: T[]) {
+  return primary && primary.length ? primary : fallback;
+}
+
+function mergeChurchRecord(primary: Church, fallback: Church) {
+  return {
+    ...primary,
+    name: preferString(primary.name, fallback.name) || "",
+    pastorName: preferString(primary.pastorName, fallback.pastorName) || "",
+    pastorTitle: preferString(primary.pastorTitle, fallback.pastorTitle) || "",
+    address: preferString(primary.address, fallback.address) || "",
+    city: preferString(primary.city, fallback.city) || "",
+    state: preferString(primary.state, fallback.state) || "",
+    zip: preferString(primary.zip, fallback.zip) || "",
+    district: preferString(primary.district, fallback.district) || "",
+    phone: preferString(primary.phone, fallback.phone),
+    email: preferString(primary.email, fallback.email),
+    website: preferString(primary.website, fallback.website),
+    source: preferString(primary.source, fallback.source) || "",
+    lastUpdated: preferString(primary.lastUpdated, fallback.lastUpdated) || "",
+    location: hasLocation(primary.location) ? primary.location : fallback.location,
+    churchImageUrl: preferString(primary.churchImageUrl, fallback.churchImageUrl),
+    pastorImageUrl: preferString(primary.pastorImageUrl, fallback.pastorImageUrl),
+    logoImageUrl: preferString(primary.logoImageUrl, fallback.logoImageUrl),
+    serviceHours: preferArray(primary.serviceHours, fallback.serviceHours) || [],
+    onlineWorshipUrl: preferString(primary.onlineWorshipUrl, fallback.onlineWorshipUrl),
+    ministries: preferArray(primary.ministries, fallback.ministries) || [],
+    notes: preferString(primary.notes, fallback.notes)
+  } satisfies Church;
+}
+
 function mergeChurchCollections(primary: Church[], fallback: Church[]) {
   const byId = new Map<string, Church>();
   const byKey = new Map<string, Church>();
@@ -115,9 +154,25 @@ function mergeChurchCollections(primary: Church[], fallback: Church[]) {
   }
 
   for (const church of fallback) {
-    if (byId.has(church.id)) continue;
-    if (byKey.has(normalizeChurchKey(church))) continue;
+    const existingById = byId.get(church.id);
+    if (existingById) {
+      const merged = mergeChurchRecord(existingById, church);
+      byId.set(church.id, merged);
+      byKey.set(normalizeChurchKey(merged), merged);
+      continue;
+    }
+
+    const key = normalizeChurchKey(church);
+    const existingByKey = byKey.get(key);
+    if (existingByKey) {
+      const merged = mergeChurchRecord(existingByKey, church);
+      byId.set(existingByKey.id, merged);
+      byKey.set(key, merged);
+      continue;
+    }
+
     byId.set(church.id, church);
+    byKey.set(key, church);
   }
 
   return [...byId.values()].sort(
@@ -301,19 +356,30 @@ export async function getChurchByTenantAndId(tenantSlug: string, churchId: strin
   if (!tenant) return null;
 
   const db = getFirebaseAdminDb();
+  const fallbackChurches = seededChurches.filter((church) => church.tenantId === tenant.id);
+  const fallbackChurch =
+    fallbackChurches.find((church) => church.id === churchId) ??
+    null;
   if (!db) {
-    return seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId) ?? null;
+    return fallbackChurch;
   }
 
   try {
     const doc = await db.collection("churches").doc(churchId).get();
     if (!doc.exists) {
-      return seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId) ?? null;
+      return fallbackChurch;
     }
     const mapped = mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>);
-    return mapped.tenantId === tenant.id ? mapped : null;
+    if (mapped.tenantId !== tenant.id) return null;
+
+    const fallbackMatch =
+      fallbackChurch ??
+      fallbackChurches.find((church) => normalizeChurchKey(church) === normalizeChurchKey(mapped)) ??
+      null;
+
+    return fallbackMatch ? mergeChurchRecord(mapped, fallbackMatch) : mapped;
   } catch {
-    return seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId) ?? null;
+    return fallbackChurch;
   }
 }
 

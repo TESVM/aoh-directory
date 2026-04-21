@@ -312,11 +312,11 @@
     "notes": "Bhamwiki Birmingham listing"
   },
   {
-    "id": "woodland-park-apostolic-overcoming-holy-church-of-god-birmingham-al",
+    "id": "woodland-park-aoh-church-of-god-birmingham-al",
     "tenantId": "tenant-aoh",
-    "name": "Woodland Park Apostolic Overcoming Holy Church of God",
-    "pastorName": "",
-    "pastorTitle": "",
+    "name": "Woodland Park AOH Church of God",
+    "pastorName": "Dwight Kimbrough",
+    "pastorTitle": "Bishop",
     "address": "",
     "city": "Birmingham",
     "state": "AL",
@@ -326,14 +326,21 @@
     "email": "",
     "website": "",
     "status": "pending",
-    "source": "Public web sweep",
-    "lastUpdated": "2026-04-15",
+    "source": "Public web sweep + User-provided update",
+    "lastUpdated": "2026-04-21",
     "location": {
       "lat": 0,
       "lng": 0
     },
+    "serviceHours": [
+      "Sunday School - 9:30 AM",
+      "Sunday Morning Worship - 11:00 AM",
+      "Sunday Night Worship - 6:00 PM",
+      "Tuesday Night Prayer - 6:00 PM",
+      "Thursday Night Bible Study - 6:00 PM"
+    ],
     "ministries": [],
-    "notes": "Bhamwiki Birmingham listing"
+    "notes": "Bhamwiki Birmingham listing | Woodland Park believes in loving people where they are and showing the light of Christ through their lives while helping heal and nurture the hurting spiritually mentally and emotionally. Motto: We love you and there is nothing you can do about it."
   },
   {
     "id": "zion-star-apostolic-overcoming-holy-church-of-god-birmingham-al",

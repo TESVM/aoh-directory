@@ -93,6 +93,34 @@ const churches = [
     logo_image_url: "/church-logos/bethesda-temple-aoh.svg",
     ministries: [],
     notes: "Updated from April 17, 2026 roll call post. User described the church as a loving church."
+  },
+  {
+    id: "woodland-park-apostolic-overcoming-holy-church-of-god-birmingham-al",
+    name: "Woodland Park AOH Church of God",
+    pastor_name: "Dwight Kimbrough",
+    pastor_title: "Bishop",
+    address: "",
+    city: "Birmingham",
+    state: "AL",
+    zip: "",
+    district: "",
+    phone: "",
+    email: "",
+    website: "",
+    online_worship_url: "",
+    service_hours: [
+      "Sunday School - 9:30 AM",
+      "Sunday Morning Worship - 11:00 AM",
+      "Sunday Night Worship - 6:00 PM",
+      "Tuesday Night Prayer - 6:00 PM",
+      "Thursday Night Bible Study - 6:00 PM"
+    ],
+    status: "pending",
+    source: "User update",
+    logo_image_url: "",
+    ministries: [],
+    notes:
+      "Woodland Park believes in loving people where they are, showing the light of Christ through their lives, and reaching out to help heal and nurture the hurting spiritually, mentally, and emotionally. Motto: We love you and there's nothing you can do about it."
   }
 ];
 
