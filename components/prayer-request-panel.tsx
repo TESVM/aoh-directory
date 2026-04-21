@@ -50,7 +50,7 @@ export function PrayerRequestPanel({
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
-        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
       >
         {open ? "Close Prayer Form" : "Submit A Prayer Request"}
       </button>
@@ -93,12 +93,12 @@ export function PrayerRequestPanel({
               className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-brand-700"
             />
           </label>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <p className="text-sm text-muted">Prayer requests are sent privately to the directory back office.</p>
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 py-2 text-center text-sm font-semibold text-white disabled:opacity-60 sm:w-auto"
             >
               {isPending ? "Sending..." : "Send Prayer Request"}
             </button>

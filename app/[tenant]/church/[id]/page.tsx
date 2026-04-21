@@ -67,12 +67,12 @@ export default async function ChurchProfilePage({
               </div>
               <div className="rounded-[1.6rem] border border-white/10 bg-white/8 p-5 backdrop-blur">
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-100">Quick Actions</p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Link href={`/${tenant.slug}`} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100">
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <Link href={`/${tenant.slug}`} className="flex min-h-11 w-full items-center justify-center rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:w-auto">
                     Back To Directory
                   </Link>
                   {church.district ? (
-                    <Link href={`/${tenant.slug}/district/${church.district}`} className="rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-pine">
+                    <Link href={`/${tenant.slug}/district/${church.district}`} className="flex min-h-11 w-full items-center justify-center rounded-full bg-brand-500 px-5 py-3 text-center text-sm font-semibold text-pine sm:w-auto">
                       District Dashboard
                     </Link>
                   ) : null}
@@ -80,14 +80,14 @@ export default async function ChurchProfilePage({
                     href={directionsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                    className="flex min-h-11 w-full items-center justify-center rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:w-auto"
                   >
                     Get Directions
                   </a>
                   {toTelHref(church.phone) ? (
                     <a
                       href={toTelHref(church.phone) || undefined}
-                      className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                      className="flex min-h-11 w-full items-center justify-center rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:w-auto"
                     >
                       Call Church
                     </a>
@@ -97,7 +97,7 @@ export default async function ChurchProfilePage({
                       href={toWebsiteHref(church.website) || undefined}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-brand-100"
+                      className="flex min-h-11 w-full items-center justify-center rounded-full border border-white/15 px-5 py-3 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:w-auto"
                     >
                       Visit Website
                     </a>

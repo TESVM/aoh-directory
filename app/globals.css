@@ -40,6 +40,21 @@ input,
 select,
 textarea {
   font: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 640px) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  [role="tab"] {
+    min-height: 44px;
+  }
 }
 
 a:focus-visible,

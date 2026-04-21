@@ -138,7 +138,7 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
         </div>
       </div>
 
-      <div className="inline-flex rounded-full border border-line bg-white p-1 shadow-card" role="tablist" aria-label="Directory views">
+      <div className="flex w-full flex-col rounded-[1.5rem] border border-line bg-white p-1 shadow-card sm:inline-flex sm:w-auto sm:flex-row sm:rounded-full" role="tablist" aria-label="Directory views">
         <TabButton active={tab === "directory"} onClick={() => setTab("directory")}>
           Directory
         </TabButton>
@@ -300,11 +300,11 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                       <Link
                         href={`/${tenant.slug}/church/${selectedChurch.id}`}
                         prefetch={false}
-                        className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white"
+                        className="flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
                       >
                         Open Profile
                       </Link>
@@ -312,7 +312,7 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                         <Link
                           href={`/${tenant.slug}/district/${selectedChurch.district}`}
                           prefetch={false}
-                          className="rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink"
+                          className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-5 py-3 text-center text-sm font-semibold text-ink sm:w-auto"
                         >
                           District View
                         </Link>
@@ -320,19 +320,19 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <a
                       href={buildGoogleMapsDirectionsUrl(selectedChurch)}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                      className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
                     >
                       Get Directions
                     </a>
                     {toTelHref(selectedChurch.phone) ? (
                       <a
                         href={toTelHref(selectedChurch.phone) || undefined}
-                        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
                       >
                         Call Church
                       </a>
@@ -342,7 +342,7 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                         href={toWebsiteHref(selectedChurch.website) || undefined}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+                        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
                       >
                         Visit Website
                       </a>
@@ -568,10 +568,10 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                 />
               </FormField>
             </div>
-            <div className="md:col-span-2 flex items-center justify-between gap-4">
+            <div className="md:col-span-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 disabled={isPending}
-                className="rounded-full bg-brand-700 px-6 py-3 font-semibold text-white shadow-card disabled:opacity-60"
+                className="flex min-h-11 w-full items-center justify-center rounded-full bg-brand-700 px-6 py-3 text-center font-semibold text-white shadow-card disabled:opacity-60 sm:w-auto"
               >
                 {isPending ? "Submitting..." : "Submit For Review"}
               </button>
@@ -606,7 +606,7 @@ function TabButton({
     <button
       role="tab"
       aria-selected={active}
-      className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+      className={`w-full rounded-full px-5 py-3 text-sm font-semibold transition sm:w-auto sm:py-2.5 ${
         active ? "bg-pine text-white" : "text-muted"
       }`}
       onClick={onClick}

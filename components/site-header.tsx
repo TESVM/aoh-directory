@@ -24,15 +24,15 @@ export async function SiteHeader({ tenant }: { tenant: Tenant }) {
         </Link>
         <nav
           aria-label="Primary navigation"
-          className="flex w-full flex-wrap items-center gap-2 text-sm font-medium text-muted lg:w-auto lg:justify-end lg:gap-4"
+          className="grid w-full grid-cols-2 gap-2 text-sm font-medium text-muted sm:flex sm:flex-wrap sm:items-center sm:gap-2 lg:w-auto lg:justify-end lg:gap-4"
         >
-          <Link href={`/${tenant.slug}`} prefetch={false} className="rounded-full px-3 py-2 transition hover:bg-sky hover:text-pine">Find a Church</Link>
-          <Link href={`/${tenant.slug}/district/3`} prefetch={false} className="rounded-full px-3 py-2 transition hover:bg-sky hover:text-pine">Districts</Link>
-          <Link href={canAccessTenantAdmin ? `/${tenant.slug}/admin` : `/login?next=/${tenant.slug}/admin`} prefetch={false} className="rounded-full px-3 py-2 transition hover:bg-sky hover:text-pine">
+          <Link href={`/${tenant.slug}`} prefetch={false} className="flex min-h-11 items-center justify-center rounded-full px-3 py-2 text-center transition hover:bg-sky hover:text-pine">Find a Church</Link>
+          <Link href={`/${tenant.slug}/district/3`} prefetch={false} className="flex min-h-11 items-center justify-center rounded-full px-3 py-2 text-center transition hover:bg-sky hover:text-pine">Districts</Link>
+          <Link href={canAccessTenantAdmin ? `/${tenant.slug}/admin` : `/login?next=/${tenant.slug}/admin`} prefetch={false} className="col-span-2 flex min-h-11 items-center justify-center rounded-full px-3 py-2 text-center transition hover:bg-sky hover:text-pine sm:col-auto">
             {canAccessTenantAdmin ? "Back Office" : "Login"}
           </Link>
           {canAccessTenantAdmin ? (
-            <Link href="/logout" prefetch={false} className="rounded-full border border-brand-100 px-4 py-2 text-ink transition hover:border-pine hover:text-pine">Logout</Link>
+            <Link href="/logout" prefetch={false} className="col-span-2 flex min-h-11 items-center justify-center rounded-full border border-brand-100 px-4 py-2 text-center text-ink transition hover:border-pine hover:text-pine sm:col-auto">Logout</Link>
           ) : null}
         </nav>
       </div>

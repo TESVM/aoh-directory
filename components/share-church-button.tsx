@@ -36,7 +36,7 @@ export function ShareChurchButton({
         type="button"
         onClick={handleShare}
         aria-label={`Share ${title}`}
-        className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
+        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
       >
         {message || "Share Church"}
       </button>

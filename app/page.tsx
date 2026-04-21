@@ -25,10 +25,10 @@ export default async function LandingPage() {
             admin review scaffolding, and a split-view directory UI.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <Link href="/aoh" className="rounded-full bg-ink px-6 py-3 font-semibold text-white shadow-card">
+            <Link href="/aoh" className="flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-center font-semibold text-white shadow-card sm:w-auto">
               Open AOH Tenant
             </Link>
-            <Link href="/demo" className="rounded-full border border-line px-6 py-3 font-semibold text-ink">
+            <Link href="/demo" className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-6 py-3 text-center font-semibold text-ink sm:w-auto">
               Open Demo Tenant
             </Link>
           </div>
