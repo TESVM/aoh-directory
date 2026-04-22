@@ -96,7 +96,7 @@ export function AdminRecordForm({
           required={districtIsRequired}
           helpText={
             districtIsRequired
-              ? "District is required for district-scoped editors."
+              ? "District is required for district or diocesan editors."
               : "Admin can leave this blank temporarily when the district is still being verified."
           }
         />
@@ -194,10 +194,10 @@ export function AdminRecordForm({
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line/80 pt-6">
         <p className="text-sm text-muted">
           {viewer.role === "overseer" || viewer.role === "bishop"
-            ? `You can only edit District ${viewer.district} records.`
+            ? `You can only edit records inside your assigned ${viewer.role === "bishop" ? "diocese" : "district"}: ${viewer.district}.`
             : viewer.role === "pastor"
               ? "You can only edit the church assigned to your login."
-            : "Tenant admin access can edit and publish all district records."}
+              : "Tenant admin access can edit and publish all district records."}
         </p>
         <SubmitButton label={submitLabel} />
       </div>

@@ -183,7 +183,7 @@ export function AdminDashboard({
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">People Who Can Edit</p>
             <h2 className="mt-3 font-serif text-3xl text-ink">Add a person</h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
-              Create an Overseer, Bishop, or Pastor account. Use Overseer or Bishop for district-level editing.
+              Create an Overseer, Bishop, or Pastor account. Use Overseer or Bishop for district or diocesan editing.
               Use Pastor when one person should only edit one church.
             </p>
 
@@ -207,7 +207,7 @@ export function AdminDashboard({
                   <option value="pastor">Pastor</option>
                 </select>
               </div>
-              <PortalField label="District number" name="district" placeholder="Use for Overseer or Bishop" />
+              <PortalField label="District or diocese" name="district" placeholder="Use for Overseer or Bishop" />
               <div className="space-y-2 md:col-span-2">
                 <label htmlFor="churchId" className="text-sm font-medium text-ink">
                   Church for Pastor accounts
@@ -255,7 +255,7 @@ export function AdminDashboard({
                   <p className="mt-3 text-sm text-muted">
                     {account.role === "pastor"
                       ? `Assigned church: ${churches.find((church) => church.id === account.churchId)?.name || "Church not found"}`
-                      : `District: ${account.district || "Not assigned"}`}
+                      : `${account.role === "bishop" ? "Diocese" : "District"}: ${account.district || "Not assigned"}`}
                   </p>
                 </div>
               ))}
@@ -595,7 +595,7 @@ function roleLabel(role: UserRecord["role"]) {
 
 function accessScopeLabel(viewer: ViewerContext) {
   if (viewer.role === "overseer" || viewer.role === "bishop") {
-    return `District ${viewer.district}`;
+    return `${viewer.role === "bishop" ? "Diocese" : "District"} ${viewer.district}`;
   }
   if (viewer.role === "pastor") {
     return "One church";

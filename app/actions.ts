@@ -153,7 +153,7 @@ function assertRoleScopedDistrict(
   district: string
 ) {
   if ((actor.role === "overseer" || actor.role === "bishop") && actor.district !== district) {
-    throw new Error("Overseers and Bishops can only manage churches inside their assigned district.");
+    throw new Error("Overseers and Bishops can only manage churches inside their assigned district or diocese.");
   }
 }
 
