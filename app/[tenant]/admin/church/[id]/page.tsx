@@ -5,7 +5,7 @@ import { AdminRecordForm } from "@/components/admin-record-form";
 import { SetupBanner } from "@/components/setup-banner";
 import { SiteHeader } from "@/components/site-header";
 import { requireTenantRole } from "@/lib/auth";
-import { getChurchByTenantAndId, getViewerContext } from "@/lib/data";
+import { ensureChurchInFirestore, getChurchByTenantAndId, getViewerContext } from "@/lib/data";
 
 export default async function AdminChurchPage({
   params
@@ -32,6 +32,8 @@ export default async function AdminChurchPage({
   if (user.role === "pastor" && user.churchId !== church.id) {
     redirect(`/${tenantSlug}/admin`);
   }
+
+  await ensureChurchInFirestore(tenantSlug, church.id);
 
   return (
     <>

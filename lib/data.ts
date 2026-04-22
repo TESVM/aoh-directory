@@ -383,6 +383,56 @@ export async function getChurchByTenantAndId(tenantSlug: string, churchId: strin
   }
 }
 
+export async function ensureChurchInFirestore(tenantSlug: string, churchId: string) {
+  const tenant = await getTenantBySlug(tenantSlug);
+  if (!tenant) return false;
+
+  const db = getFirebaseAdminDb();
+  if (!db) return false;
+
+  const docRef = db.collection("churches").doc(churchId);
+  const existingDoc = await docRef.get();
+  if (existingDoc.exists) {
+    return true;
+  }
+
+  const fallbackChurch = seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId);
+  if (!fallbackChurch) {
+    return false;
+  }
+
+  await docRef.set(
+    {
+      tenant_id: tenant.id,
+      name: fallbackChurch.name,
+      pastor_name: fallbackChurch.pastorName,
+      pastor_title: fallbackChurch.pastorTitle,
+      address: fallbackChurch.address,
+      city: fallbackChurch.city,
+      state: fallbackChurch.state,
+      zip: fallbackChurch.zip,
+      district: fallbackChurch.district,
+      phone: fallbackChurch.phone || "",
+      email: fallbackChurch.email || "",
+      website: fallbackChurch.website || "",
+      status: fallbackChurch.status,
+      source: fallbackChurch.source,
+      last_updated: fallbackChurch.lastUpdated,
+      location: fallbackChurch.location,
+      church_image_url: fallbackChurch.churchImageUrl || "",
+      pastor_image_url: fallbackChurch.pastorImageUrl || "",
+      logo_image_url: fallbackChurch.logoImageUrl || "",
+      service_hours: fallbackChurch.serviceHours || [],
+      online_worship_url: fallbackChurch.onlineWorshipUrl || "",
+      ministries: fallbackChurch.ministries || [],
+      notes: fallbackChurch.notes || ""
+    },
+    { merge: true }
+  );
+
+  return true;
+}
+
 export async function getSubmissionByTenantAndId(tenantSlug: string, submissionId: string) {
   const tenant = await getTenantBySlug(tenantSlug);
   if (!tenant) return null;
