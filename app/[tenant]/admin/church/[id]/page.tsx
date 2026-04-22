@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { updateChurchAction } from "@/app/actions";
 import { AdminRecordForm } from "@/components/admin-record-form";
+import { DeleteChurchButton } from "@/components/delete-church-button";
 import { SetupBanner } from "@/components/setup-banner";
 import { SiteHeader } from "@/components/site-header";
 import { requireTenantRole } from "@/lib/auth";
@@ -65,6 +66,9 @@ export default async function AdminChurchPage({
           submitLabel="Save church changes"
           action={updateChurchAction}
         />
+        <div className="mt-8">
+          <DeleteChurchButton tenantSlug={tenantSlug} churchId={church.id} />
+        </div>
       </main>
     </>
   );

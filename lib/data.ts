@@ -31,6 +31,8 @@ type FirestoreChurch = {
   online_worship_url?: string;
   ministries?: string[];
   notes?: string;
+  deleted_at?: string | Timestamp;
+  deleted_by?: string;
 };
 
 type FirestoreSubmission = {
@@ -213,6 +215,10 @@ function mapChurchDoc(doc: QueryDocumentSnapshot<FirestoreChurch>): Church {
   };
 }
 
+function isDeletedChurch(data: FirestoreChurch) {
+  return Boolean(data.deleted_at);
+}
+
 function mapSubmissionDoc(doc: QueryDocumentSnapshot<FirestoreSubmission>, tenantId: string): Submission {
   const data = doc.data();
   return {
@@ -344,8 +350,29 @@ export async function getChurchesByTenant(tenantSlug: string) {
 
   try {
     const snapshot = await db.collection("churches").where("tenant_id", "==", tenant.id).get();
-    const firestoreChurches = snapshot.docs.map((doc) => mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>));
-    return mergeChurchCollections(firestoreChurches, fallbackChurches);
+    const deletedChurchs = snapshot.docs
+      .map((doc) => ({ id: doc.id, data: doc.data() as FirestoreChurch }))
+      .filter(({ data }) => isDeletedChurch(data));
+
+    const deletedIds = new Set(deletedChurchs.map(({ id }) => id));
+    const deletedKeys = new Set(
+      deletedChurchs.map(({ data }) =>
+        normalizeChurchKey({
+          name: data.name,
+          city: data.city,
+          state: data.state
+        })
+      )
+    );
+
+    const firestoreChurches = snapshot.docs
+      .filter((doc) => !isDeletedChurch(doc.data() as FirestoreChurch))
+      .map((doc) => mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>));
+    const activeFallbackChurches = fallbackChurches.filter(
+      (church) => !deletedIds.has(church.id) && !deletedKeys.has(normalizeChurchKey(church))
+    );
+
+    return mergeChurchCollections(firestoreChurches, activeFallbackChurches);
   } catch {
     return fallbackChurches;
   }
@@ -368,6 +395,9 @@ export async function getChurchByTenantAndId(tenantSlug: string, churchId: strin
     const doc = await db.collection("churches").doc(churchId).get();
     if (!doc.exists) {
       return fallbackChurch;
+    }
+    if (isDeletedChurch(doc.data() as FirestoreChurch)) {
+      return null;
     }
     const mapped = mapChurchDoc(doc as QueryDocumentSnapshot<FirestoreChurch>);
     if (mapped.tenantId !== tenant.id) return null;

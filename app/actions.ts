@@ -485,6 +485,65 @@ export async function updateChurchAction(formData: FormData): Promise<ActionResu
   }
 }
 
+export async function deleteChurchAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const tenantSlug = String(formData.get("tenantSlug") || "");
+    const churchId = String(formData.get("churchId") || "");
+
+    const { tenant, user } = await requireTenantRole(tenantSlug, ["admin", "overseer", "bishop", "pastor"]);
+    const db = getFirebaseAdminDb();
+
+    if (!db) {
+      throw new Error("Firebase admin is not configured.");
+    }
+
+    const currentChurch = await getChurchByTenantAndId(tenantSlug, churchId);
+    if (!currentChurch) {
+      throw new Error("Church not found.");
+    }
+
+    assertRoleScopedDistrict(user, currentChurch.district);
+    assertRoleScopedChurch(user, currentChurch.id);
+
+    await db.collection("churches").doc(churchId).set(
+      {
+        tenant_id: tenant.id,
+        name: currentChurch.name,
+        city: currentChurch.city,
+        state: currentChurch.state,
+        district: currentChurch.district,
+        deleted_at: new Date().toISOString(),
+        deleted_by: user.uid,
+        last_updated: new Date().toISOString().slice(0, 10)
+      },
+      { merge: true }
+    );
+
+    await db.collection("audit_logs").add({
+      tenant_id: tenant.id,
+      action: "church_deleted",
+      church_id: churchId,
+      performed_by: user.uid,
+      created_at: new Date().toISOString()
+    });
+
+    revalidatePath(`/${tenantSlug}`);
+    revalidatePath(`/${tenantSlug}/admin`);
+    revalidatePath(`/${tenantSlug}/admin/church/${churchId}`);
+    revalidatePath(`/${tenantSlug}/church/${churchId}`);
+
+    return {
+      ok: true,
+      message: "Church profile deleted."
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Church could not be deleted."
+    };
+  }
+}
+
 export async function updateSubmissionAction(formData: FormData): Promise<ActionResult> {
   try {
     const tenantSlug = String(formData.get("tenantSlug") || "");
