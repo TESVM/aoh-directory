@@ -431,28 +431,34 @@ export async function updateChurchAction(formData: FormData): Promise<ActionResu
       currentChurch.logoImageUrl ||
       "";
 
-    await db.collection("churches").doc(churchId).update({
-      name: payload.name,
-      pastor_name: payload.pastorName,
-      pastor_title: payload.pastorTitle || "Pastor",
-      address: payload.address,
-      city: payload.city,
-      state: payload.state,
-      zip: payload.zip,
-      district: payload.district,
-      phone: payload.phone,
-      email: payload.email,
-      website: payload.website,
-      church_image_url: churchImageUrl,
-      pastor_image_url: pastorImageUrl,
-      logo_image_url: logoImageUrl,
-      service_hours: payload.serviceHours,
-      online_worship_url: payload.onlineWorshipUrl,
-      status: payload.status,
-      source: payload.source,
-      notes: payload.notes,
-      last_updated: new Date().toISOString().slice(0, 10)
-    });
+    await db.collection("churches").doc(churchId).set(
+      {
+        tenant_id: tenant.id,
+        name: payload.name,
+        pastor_name: payload.pastorName,
+        pastor_title: payload.pastorTitle || "Pastor",
+        address: payload.address,
+        city: payload.city,
+        state: payload.state,
+        zip: payload.zip,
+        district: payload.district,
+        phone: payload.phone,
+        email: payload.email,
+        website: payload.website,
+        church_image_url: churchImageUrl,
+        pastor_image_url: pastorImageUrl,
+        logo_image_url: logoImageUrl,
+        service_hours: payload.serviceHours,
+        online_worship_url: payload.onlineWorshipUrl,
+        status: payload.status,
+        source: payload.source,
+        notes: payload.notes,
+        last_updated: new Date().toISOString().slice(0, 10),
+        location: currentChurch.location,
+        ministries: currentChurch.ministries || []
+      },
+      { merge: true }
+    );
 
     await db.collection("audit_logs").add({
       tenant_id: tenant.id,
