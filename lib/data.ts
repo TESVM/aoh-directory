@@ -385,52 +385,81 @@ export async function getChurchByTenantAndId(tenantSlug: string, churchId: strin
 
 export async function ensureChurchInFirestore(tenantSlug: string, churchId: string) {
   const tenant = await getTenantBySlug(tenantSlug);
-  if (!tenant) return false;
+  if (!tenant) {
+    return {
+      ok: false,
+      reason: "Tenant not found."
+    };
+  }
 
   const db = getFirebaseAdminDb();
-  if (!db) return false;
-
-  const docRef = db.collection("churches").doc(churchId);
-  const existingDoc = await docRef.get();
-  if (existingDoc.exists) {
-    return true;
+  if (!db) {
+    return {
+      ok: false,
+      reason: "Firebase admin is not configured."
+    };
   }
 
-  const fallbackChurch = seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId);
-  if (!fallbackChurch) {
-    return false;
+  try {
+    const docRef = db.collection("churches").doc(churchId);
+    const existingDoc = await docRef.get();
+    if (existingDoc.exists) {
+      return {
+        ok: true
+      };
+    }
+
+    const fallbackChurch = seededChurches.find((church) => church.tenantId === tenant.id && church.id === churchId);
+    if (!fallbackChurch) {
+      return {
+        ok: false,
+        reason: "Church was not found in the backup roster."
+      };
+    }
+
+    await docRef.set(
+      {
+        tenant_id: tenant.id,
+        name: fallbackChurch.name,
+        pastor_name: fallbackChurch.pastorName,
+        pastor_title: fallbackChurch.pastorTitle,
+        address: fallbackChurch.address,
+        city: fallbackChurch.city,
+        state: fallbackChurch.state,
+        zip: fallbackChurch.zip,
+        district: fallbackChurch.district,
+        phone: fallbackChurch.phone || "",
+        email: fallbackChurch.email || "",
+        website: fallbackChurch.website || "",
+        status: fallbackChurch.status,
+        source: fallbackChurch.source,
+        last_updated: fallbackChurch.lastUpdated,
+        location: fallbackChurch.location,
+        church_image_url: fallbackChurch.churchImageUrl || "",
+        pastor_image_url: fallbackChurch.pastorImageUrl || "",
+        logo_image_url: fallbackChurch.logoImageUrl || "",
+        service_hours: fallbackChurch.serviceHours || [],
+        online_worship_url: fallbackChurch.onlineWorshipUrl || "",
+        ministries: fallbackChurch.ministries || [],
+        notes: fallbackChurch.notes || ""
+      },
+      { merge: true }
+    );
+
+    return {
+      ok: true
+    };
+  } catch (error) {
+    console.error("Failed to ensure church exists in Firestore", {
+      tenantSlug,
+      churchId,
+      error
+    });
+    return {
+      ok: false,
+      reason: "Firestore could not prepare this church record yet."
+    };
   }
-
-  await docRef.set(
-    {
-      tenant_id: tenant.id,
-      name: fallbackChurch.name,
-      pastor_name: fallbackChurch.pastorName,
-      pastor_title: fallbackChurch.pastorTitle,
-      address: fallbackChurch.address,
-      city: fallbackChurch.city,
-      state: fallbackChurch.state,
-      zip: fallbackChurch.zip,
-      district: fallbackChurch.district,
-      phone: fallbackChurch.phone || "",
-      email: fallbackChurch.email || "",
-      website: fallbackChurch.website || "",
-      status: fallbackChurch.status,
-      source: fallbackChurch.source,
-      last_updated: fallbackChurch.lastUpdated,
-      location: fallbackChurch.location,
-      church_image_url: fallbackChurch.churchImageUrl || "",
-      pastor_image_url: fallbackChurch.pastorImageUrl || "",
-      logo_image_url: fallbackChurch.logoImageUrl || "",
-      service_hours: fallbackChurch.serviceHours || [],
-      online_worship_url: fallbackChurch.onlineWorshipUrl || "",
-      ministries: fallbackChurch.ministries || [],
-      notes: fallbackChurch.notes || ""
-    },
-    { merge: true }
-  );
-
-  return true;
 }
 
 export async function getSubmissionByTenantAndId(tenantSlug: string, submissionId: string) {

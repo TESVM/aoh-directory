@@ -33,13 +33,23 @@ export default async function AdminChurchPage({
     redirect(`/${tenantSlug}/admin`);
   }
 
-  await ensureChurchInFirestore(tenantSlug, church.id);
+  const bootstrapResult = await ensureChurchInFirestore(tenantSlug, church.id);
 
   return (
     <>
       <SiteHeader tenant={viewer.tenant} />
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <SetupBanner />
+        {!bootstrapResult.ok ? (
+          <div className="mb-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-amber-950 shadow-card">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em]">Church Record Warning</p>
+            <p className="mt-2 text-sm leading-7">
+              This church page loaded from the merged directory, but Firestore did not fully prepare the live record yet.
+              You can still try saving. If the problem repeats, reopen the editor from the admin dashboard.
+            </p>
+            {bootstrapResult.reason ? <p className="mt-3 text-sm font-medium">{bootstrapResult.reason}</p> : null}
+          </div>
+        ) : null}
         <div className="mb-6 flex flex-wrap items-center gap-3 text-sm font-medium text-brand-700">
           <Link href={`/${tenantSlug}/admin`}>Back to admin</Link>
           <span className="text-muted">/</span>
