@@ -11,6 +11,7 @@
     "mobile:add:android": "npx cap add android",
     "mobile:copy": "npx cap copy",
     "mobile:sync": "npx cap sync",
+    "mobile:sync:prod": "npx cap sync",
     "mobile:sync:local": "CAP_SERVER_URL=http://127.0.0.1:3006/aoh npx cap sync",
     "mobile:open:ios": "npx cap open ios",
     "mobile:open:android": "npx cap open android",

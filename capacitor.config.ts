@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-const defaultAppUrl = "https://aoh-directory.vercel.app/aoh";
+const defaultAppUrl = "https://aohdirectory.com/aoh";
 const appUrl = process.env.CAP_SERVER_URL?.trim() || defaultAppUrl;
 
 let server: CapacitorConfig["server"];
