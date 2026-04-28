@@ -4,7 +4,8 @@ import "@/app/globals.css";
 
 export const metadata: Metadata = {
   title: "AOH Church of God Directory",
-  description: "Official church directory for Apostolic Overcoming Holy Church of God, Inc.",
+  description:
+    "Church directory app for members, visitors, pastors, leaders, and families to find Apostolic Overcoming Holy Church of God, Inc. churches.",
   applicationName: "AOH Church of God Directory",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -18,6 +19,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/aoh-directory-badge.png",
     apple: "/aoh-directory-badge.png"
+  },
+  alternates: {
+    canonical: "https://aohdirectory.com"
   }
 };
 
