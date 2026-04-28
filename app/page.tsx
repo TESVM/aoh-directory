@@ -14,7 +14,7 @@ export default async function LandingPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.35em] text-brand-700">Standalone Product</p>
           <div className="mt-4 flex h-40 w-40 items-center justify-center rounded-[1.8rem] border border-line/80 bg-white p-4 shadow-card sm:h-52 sm:w-52 sm:p-5">
             <img
-              src="/aoh-logo.svg"
+              src="/aoh-directory-badge.png"
               alt="AOH Church of God logo"
               className="h-full w-full object-contain"
             />

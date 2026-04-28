@@ -3,8 +3,9 @@ export function formatPhone(phone?: string) {
 }
 
 export function toTelHref(phone?: string) {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
+  const trimmedPhone = phone?.trim();
+  if (!trimmedPhone) return null;
+  const digits = trimmedPhone.replace(/\D/g, "");
   if (!digits) return null;
   if (digits.length === 10) return `tel:+1${digits}`;
   if (digits.length === 11 && digits.startsWith("1")) return `tel:+${digits}`;
@@ -12,13 +13,21 @@ export function toTelHref(phone?: string) {
 }
 
 export function formatWebsite(website?: string) {
-  if (!website) return "Not listed";
-  return website.replace(/^https?:\/\//, "");
+  const trimmedWebsite = website?.trim();
+  if (!trimmedWebsite) return "Not listed";
+  return trimmedWebsite.replace(/^https?:\/\//i, "");
 }
 
 export function toWebsiteHref(website?: string) {
-  if (!website) return null;
-  return /^https?:\/\//i.test(website) ? website : `https://${website}`;
+  const trimmedWebsite = website?.trim();
+  if (!trimmedWebsite) return null;
+  return /^https?:\/\//i.test(trimmedWebsite) ? trimmedWebsite : `https://${trimmedWebsite}`;
+}
+
+export function toMailtoHref(email?: string) {
+  const trimmedEmail = email?.trim();
+  if (!trimmedEmail) return null;
+  return `mailto:${trimmedEmail}`;
 }
 
 export function badgeTone(status: string) {

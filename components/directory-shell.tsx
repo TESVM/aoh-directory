@@ -1,13 +1,12 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
 import { useMemo, useState, useTransition } from "react";
 import { submitChurchSubmissionAction } from "@/app/actions";
-import { PrayerRequestPanel } from "@/components/prayer-request-panel";
-import { ShareChurchButton } from "@/components/share-church-button";
 import { Church, Submission, Tenant } from "@/lib/types";
-import { badgeTone, formatPhone, formatWebsite, toTelHref, toWebsiteHref } from "@/lib/utils";
+import { badgeTone } from "@/lib/utils";
 
 type DirectoryShellProps = {
   tenant: Tenant;
@@ -27,6 +26,7 @@ type FormState = {
   phone: string;
   email: string;
   website: string;
+  ministries: string;
 };
 
 const emptyForm: FormState = {
@@ -40,16 +40,63 @@ const emptyForm: FormState = {
   district: "",
   phone: "",
   email: "",
-  website: ""
+  website: "",
+  ministries: ""
 };
 
-function buildGoogleMapsDirectionsUrl(church: Pick<Church, "address" | "city" | "state" | "zip" | "name">) {
-  const destination = [church.address, `${church.city}, ${church.state} ${church.zip}`].filter(Boolean).join(", ");
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&destination_place_id=&travelmode=driving`;
+function parseMultilineEntries(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
-function buildChurchProfileUrl(tenantSlug: string, churchId: string) {
-  return `/${tenantSlug}/church/${churchId}`;
+function scoreChurchProfileCompleteness(church: Church) {
+  let score = 0;
+
+  const optionalFields = [
+    church.pastorName,
+    church.pastorTitle,
+    church.address,
+    church.city,
+    church.state,
+    church.zip,
+    church.district,
+    church.phone,
+    church.email,
+    church.website,
+    church.source,
+    church.lastUpdated,
+    church.churchImageUrl,
+    church.pastorImageUrl,
+    church.logoImageUrl,
+    church.onlineWorshipUrl,
+    church.notes
+  ];
+
+  for (const value of optionalFields) {
+    if (String(value || "").trim()) {
+      score += 1;
+    }
+  }
+
+  if ((church.location?.lat || 0) !== 0 || (church.location?.lng || 0) !== 0) {
+    score += 1;
+  }
+
+  if (church.serviceHours?.length) {
+    score += 1;
+  }
+
+  if (church.ministries?.length) {
+    score += 1;
+  }
+
+  return score;
+}
+
+function buildChurchProfileUrl(tenantSlug: string, churchId: string): Route {
+  return `/${tenantSlug}/church/${churchId}` as Route;
 }
 
 export function DirectoryShell({ tenant, churches, submissions }: DirectoryShellProps) {
@@ -58,12 +105,24 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
   const [stateFilter, setStateFilter] = useState("");
   const [districtFilter, setDistrictFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [selectedId, setSelectedId] = useState(churches[0]?.id ?? null);
   const [formState, setFormState] = useState<FormState>(emptyForm);
   const [formMessage, setFormMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const allChurches = useMemo(() => churches, [churches]);
+  const allChurches = useMemo(
+    () =>
+      [...churches].sort((left, right) => {
+        const completenessDifference =
+          scoreChurchProfileCompleteness(right) - scoreChurchProfileCompleteness(left);
+
+        if (completenessDifference !== 0) {
+          return completenessDifference;
+        }
+
+        return left.city.localeCompare(right.city) || left.name.localeCompare(right.name);
+      }),
+    [churches]
+  );
 
   const states = useMemo(
     () => [...new Set(allChurches.map((church) => church.state))].sort(),
@@ -93,8 +152,6 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
     });
   }, [allChurches, districtFilter, query, stateFilter, statusFilter]);
 
-  const selectedChurch = filtered.find((church) => church.id === selectedId) ?? filtered[0] ?? null;
-
   function handleInputChange<K extends keyof FormState>(field: K, value: FormState[K]) {
     setFormState((current) => ({ ...current, [field]: value }));
   }
@@ -103,7 +160,10 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
     event.preventDefault();
     setFormMessage("");
     startTransition(async () => {
-      const result = await submitChurchSubmissionAction(tenant.slug, formState);
+      const result = await submitChurchSubmissionAction(tenant.slug, {
+        ...formState,
+        ministries: parseMultilineEntries(formState.ministries)
+      });
       setFormMessage(result.message);
       if (result.ok) {
         setFormState(emptyForm);
@@ -157,314 +217,121 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
               </div>
               <div className="grid gap-3 md:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr]">
                 <Field label="Church, pastor, city, or district">
-              <input
-                className="w-full rounded-2xl border border-line bg-surface px-4 py-4 text-base outline-none focus:border-brand-500"
-                placeholder="Start typing here..."
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </Field>
-            <Field label="State">
-              <select
-                className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
-                value={stateFilter}
-                onChange={(event) => setStateFilter(event.target.value)}
-              >
-                <option value="">All states</option>
-                {states.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="District">
-              <select
-                className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
-                value={districtFilter}
-                onChange={(event) => setDistrictFilter(event.target.value)}
-              >
-                <option value="">All districts</option>
-                {districts.map((district) => (
-                  <option key={district} value={district}>
-                    {district}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Status">
-              <select
-                className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-              >
-                <option value="">All statuses</option>
-                <option value="verified">Verified</option>
-                <option value="pending">Pending</option>
-                <option value="submitted">Submitted</option>
-              </select>
-            </Field>
+                  <input
+                    className="w-full rounded-2xl border border-line bg-surface px-4 py-4 text-base outline-none focus:border-brand-500"
+                    placeholder="Start typing here..."
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                  />
+                </Field>
+                <Field label="State">
+                  <select
+                    className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
+                    value={stateFilter}
+                    onChange={(event) => setStateFilter(event.target.value)}
+                  >
+                    <option value="">All states</option>
+                    {states.map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="District">
+                  <select
+                    className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
+                    value={districtFilter}
+                    onChange={(event) => setDistrictFilter(event.target.value)}
+                  >
+                    <option value="">All districts</option>
+                    {districts.map((district) => (
+                      <option key={district} value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Status">
+                  <select
+                    className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                  >
+                    <option value="">All statuses</option>
+                    <option value="verified">Verified</option>
+                    <option value="pending">Pending</option>
+                    <option value="submitted">Submitted</option>
+                  </select>
+                </Field>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
-            <div className="rounded-[1.75rem] border border-line/80 bg-white p-4 shadow-card">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Results</p>
-                  <p className="text-sm text-muted">{filtered.length} churches shown</p>
-                </div>
-                <button
-                  className="text-sm font-medium text-brand-700"
-                  onClick={() => {
-                    setQuery("");
-                    setStateFilter("");
-                    setDistrictFilter("");
-                    setStatusFilter("");
-                  }}
-                >
-                  Reset
-                </button>
+          <div className="rounded-[1.75rem] border border-line/80 bg-white p-4 shadow-card">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Results</p>
+                <p className="text-sm text-muted">{filtered.length} churches shown</p>
               </div>
-              <div className="space-y-3">
-                {filtered.map((church) => (
-                  <button
-                    key={church.id}
-                    type="button"
-                    aria-pressed={selectedChurch?.id === church.id}
-                    className={`w-full rounded-[1.4rem] border p-4 text-left transition ${
-                      selectedChurch?.id === church.id
-                        ? "border-brand-500 bg-brand-50 shadow-card"
-                        : "border-line/80 bg-surface hover:border-brand-300 hover:bg-white"
-                    }`}
-                    onClick={() => setSelectedId(church.id)}
-                  >
-                    {church.churchImageUrl ? (
-                      <img
-                        src={church.churchImageUrl}
-                        alt={church.name}
-                        className="mb-4 aspect-[16/9] w-full rounded-[1rem] border border-line/80 object-cover"
-                      />
-                    ) : null}
-                    <h2 className="font-serif text-xl text-ink">{church.name}</h2>
-                    <p className="mt-1 text-sm text-muted">
-                      {church.city}, {church.state}
-                    </p>
-                    <p className="mt-1 text-sm text-ink">
-                      {[church.pastorTitle, church.pastorName].filter(Boolean).join(" ") || "Leadership details pending"}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Badge tone="bg-stone-100 text-stone-800">
-                        {church.district ? `District ${church.district}` : "District pending"}
-                      </Badge>
-                      <Badge tone={badgeTone(church.status)}>{church.status}</Badge>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <button
+                className="text-sm font-medium text-brand-700"
+                onClick={() => {
+                  setQuery("");
+                  setStateFilter("");
+                  setDistrictFilter("");
+                  setStatusFilter("");
+                }}
+              >
+                Reset
+              </button>
             </div>
 
-            <div className="rounded-[1.75rem] border border-line/80 bg-white p-6 shadow-card">
-              {selectedChurch ? (
-                <div className="space-y-6">
-                  {selectedChurch.churchImageUrl ? (
-                    <img
-                      src={selectedChurch.churchImageUrl}
-                      alt={selectedChurch.name}
-                      className="aspect-[18/7] w-full rounded-[1.5rem] border border-line/70 object-cover"
-                    />
-                  ) : null}
-                  <div className="flex flex-col justify-between gap-4 border-b border-line/70 pb-5 md:flex-row">
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge tone={badgeTone(selectedChurch.status)}>{selectedChurch.status}</Badge>
-                        <Badge tone="bg-stone-100 text-stone-800">
-                          {selectedChurch.district ? `District ${selectedChurch.district}` : "District pending"}
-                        </Badge>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-4">
-                        {selectedChurch.logoImageUrl ? (
-                          <img
-                            src={selectedChurch.logoImageUrl}
-                            alt={`${selectedChurch.name} logo`}
-                            className="h-16 w-16 rounded-[1rem] border border-line/70 bg-white object-cover p-2"
-                          />
-                        ) : null}
-                        <div>
-                          <h2 className="font-serif text-3xl text-ink">{selectedChurch.name}</h2>
-                          <p className="mt-2 text-lg text-muted">
-                            {[selectedChurch.pastorTitle, selectedChurch.pastorName].filter(Boolean).join(" ") ||
-                              "Leadership details pending"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                      <Link
-                        href={`/${tenant.slug}/church/${selectedChurch.id}`}
-                        prefetch={false}
-                        className="flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-center text-sm font-semibold text-white sm:w-auto"
-                      >
-                        Open Profile
-                      </Link>
-                      {selectedChurch.district ? (
-                        <Link
-                          href={`/${tenant.slug}/district/${selectedChurch.district}`}
-                          prefetch={false}
-                          className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-5 py-3 text-center text-sm font-semibold text-ink sm:w-auto"
-                        >
-                          District View
-                        </Link>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                    <a
-                      href={buildGoogleMapsDirectionsUrl(selectedChurch)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
+            {filtered.length ? (
+              <>
+                <p className="mb-4 text-sm text-muted">Tap any church to open its full profile on a separate page.</p>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((church) => (
+                    <Link
+                      key={church.id}
+                      href={buildChurchProfileUrl(tenant.slug, church.id)}
+                      prefetch={false}
+                      className="block rounded-[1.4rem] border border-line/80 bg-surface p-4 text-left transition hover:border-brand-300 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-200"
+                      aria-label={`Open ${church.name} church profile`}
                     >
-                      Get Directions
-                    </a>
-                    {toTelHref(selectedChurch.phone) ? (
-                      <a
-                        href={toTelHref(selectedChurch.phone) || undefined}
-                        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
-                      >
-                        Call Church
-                      </a>
-                    ) : null}
-                    {toWebsiteHref(selectedChurch.website) ? (
-                      <a
-                        href={toWebsiteHref(selectedChurch.website) || undefined}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex min-h-11 w-full items-center justify-center rounded-full border border-line px-4 py-2 text-center text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700 sm:w-auto"
-                      >
-                        Visit Website
-                      </a>
-                    ) : null}
-                    <ShareChurchButton
-                      title={selectedChurch.name}
-                      url={buildChurchProfileUrl(tenant.slug, selectedChurch.id)}
-                    />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <InfoCard label="Church Family">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <VisualTile
-                          title="Church Photo"
-                          imageUrl={selectedChurch.churchImageUrl}
-                          fallback="Church photo coming soon."
+                      {church.churchImageUrl ? (
+                        <img
+                          src={church.churchImageUrl}
+                          alt={church.name}
+                          className="mb-4 aspect-[16/9] w-full rounded-[1rem] border border-line/80 object-cover"
                         />
-                        <VisualTile
-                          title="Pastor Photo"
-                          imageUrl={selectedChurch.pastorImageUrl}
-                          fallback="Pastor photo coming soon."
-                        />
-                      </div>
-                    </InfoCard>
-                    <InfoCard label="Address">
-                      {selectedChurch.address ? (
-                        <a
-                          href={buildGoogleMapsDirectionsUrl(selectedChurch)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
-                        >
-                          <p>{selectedChurch.address}</p>
-                          <p>
-                            {selectedChurch.city}, {selectedChurch.state} {selectedChurch.zip}
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-brand-700">Open in Google Maps for directions</p>
-                        </a>
-                      ) : (
-                        <p>Street address still needs confirmation for this church.</p>
-                      )}
-                    </InfoCard>
-                    <InfoCard label="Contact">
-                      <p>{formatPhone(selectedChurch.phone)}</p>
-                      <p>{selectedChurch.email || "Email not listed"}</p>
-                      <p>{formatWebsite(selectedChurch.website)}</p>
-                    </InfoCard>
-                    <InfoCard label="Service Hours">
-                      {selectedChurch.serviceHours?.length ? (
-                        <ul className="space-y-1">
-                          {selectedChurch.serviceHours.map((time) => (
-                            <li key={time}>{time}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>Call the church for current service times.</p>
-                      )}
-                    </InfoCard>
-                    <InfoCard label="Online Worship">
-                      {selectedChurch.onlineWorshipUrl ? (
-                        <a
-                          href={toWebsiteHref(selectedChurch.onlineWorshipUrl) || undefined}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-                        >
-                          Join Online Worship
-                        </a>
-                      ) : (
-                        <p>Online worship is not listed for this church.</p>
-                      )}
-                    </InfoCard>
-                    <InfoCard label="Trust Layer">
-                      <p>Source: {selectedChurch.source}</p>
-                      <p>Last updated: {selectedChurch.lastUpdated}</p>
-                    </InfoCard>
-                    <InfoCard label="Map & Directions">
-                      <p>Use the button below to open this church in Google Maps.</p>
-                      <p className="text-sm text-muted">
-                        Google Maps will show the church location and help you get there.
+                      ) : null}
+                      <h2 className="font-serif text-xl text-ink">{church.name}</h2>
+                      <p className="mt-1 text-sm text-muted">
+                        {church.city}, {church.state}
                       </p>
-                      <a
-                        href={buildGoogleMapsDirectionsUrl(selectedChurch)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-500 hover:text-brand-700"
-                      >
-                        Get Directions
-                      </a>
-                    </InfoCard>
-                    <InfoCard label="Ministry Groups">
-                      {selectedChurch.ministries.length ? (
-                        <div className="flex flex-wrap gap-2">
-                          {selectedChurch.ministries.map((ministry) => (
-                            <Badge key={ministry} tone="bg-brand-50 text-brand-900">
-                              {ministry}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>Ministry groups are not listed yet.</p>
-                      )}
-                    </InfoCard>
-                    <InfoCard label="Prayer">
-                      <PrayerRequestPanel
-                        tenantSlug={tenant.slug}
-                        churchId={selectedChurch.id}
-                        churchName={selectedChurch.name}
-                      />
-                    </InfoCard>
-                  </div>
+                      <p className="mt-1 text-sm text-ink">
+                        {[church.pastorTitle, church.pastorName].filter(Boolean).join(" ") || "Leadership details pending"}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge tone="bg-stone-100 text-stone-800">
+                          {church.district ? `District ${church.district}` : "District pending"}
+                        </Badge>
+                        <Badge tone={badgeTone(church.status)}>{church.status}</Badge>
+                      </div>
+                      <p className="mt-4 text-sm font-semibold text-brand-700">Open full profile</p>
+                    </Link>
+                  ))}
                 </div>
-              ) : (
-                <div className="grid min-h-[24rem] place-items-center text-center">
-                  <div>
-                    <h2 className="font-serif text-2xl text-ink">No churches found</h2>
-                    <p className="mt-2 text-muted">Broaden the search or add a church from the registration tab.</p>
-                  </div>
+              </>
+            ) : (
+              <div className="grid min-h-[16rem] place-items-center text-center">
+                <div>
+                  <h2 className="font-serif text-2xl text-ink">No churches found</h2>
+                  <p className="mt-2 text-muted">Broaden the search or add a church from the registration tab.</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -568,6 +435,17 @@ export function DirectoryShell({ tenant, churches, submissions }: DirectoryShell
                 />
               </FormField>
             </div>
+            <div className="md:col-span-2">
+              <FormField label="Ministry Groups">
+                <textarea
+                  rows={4}
+                  className="w-full rounded-2xl border border-line bg-surface px-4 py-3 outline-none focus:border-brand-500"
+                  value={formState.ministries}
+                  onChange={(event) => handleInputChange("ministries", event.target.value)}
+                />
+              </FormField>
+              <p className="mt-2 text-sm text-muted">Put each ministry group on its own line.</p>
+            </div>
             <div className="md:col-span-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 disabled={isPending}
@@ -632,38 +510,6 @@ function FormField({ label, children }: { label: string; children: ReactNode }) 
       <span className="mb-2 block text-sm font-medium text-ink">{label}</span>
       {children}
     </label>
-  );
-}
-
-function InfoCard({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="rounded-[1.35rem] border border-line/80 bg-surface p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">{label}</p>
-      <div className="mt-3 space-y-1 text-sm leading-7 text-ink">{children}</div>
-    </div>
-  );
-}
-
-function VisualTile({
-  title,
-  imageUrl,
-  fallback
-}: {
-  title: string;
-  imageUrl?: string;
-  fallback: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-sm font-semibold text-ink">{title}</p>
-      {imageUrl ? (
-        <img src={imageUrl} alt={title} className="aspect-[4/3] w-full rounded-[1rem] border border-line/70 object-cover" />
-      ) : (
-        <div className="grid aspect-[4/3] w-full place-items-center rounded-[1rem] border border-dashed border-line bg-white px-3 text-center text-sm text-muted">
-          {fallback}
-        </div>
-      )}
-    </div>
   );
 }
 

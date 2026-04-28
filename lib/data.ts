@@ -97,6 +97,27 @@ function normalizeDate(value?: string | Timestamp) {
   return value.toDate().toISOString().slice(0, 10);
 }
 
+function normalizeText(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function normalizeStringArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/\r?\n|,/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 function normalizeChurchKey(church: Pick<Church, "name" | "city" | "state">) {
   return [church.name, church.city, church.state]
     .join("|")
@@ -179,9 +200,9 @@ function mergeChurchCollections(primary: Church[], fallback: Church[]) {
 
   return [...byId.values()].sort(
     (left, right) =>
-      left.state.localeCompare(right.state) ||
-      left.city.localeCompare(right.city) ||
-      left.name.localeCompare(right.name)
+      normalizeText(left.state).localeCompare(normalizeText(right.state)) ||
+      normalizeText(left.city).localeCompare(normalizeText(right.city)) ||
+      normalizeText(left.name).localeCompare(normalizeText(right.name))
   );
 }
 
@@ -190,28 +211,28 @@ function mapChurchDoc(doc: QueryDocumentSnapshot<FirestoreChurch>): Church {
   return {
     id: doc.id,
     tenantId: data.tenant_id,
-    name: data.name,
-    pastorName: data.pastor_name,
-    pastorTitle: data.pastor_title,
-    address: data.address,
-    city: data.city,
-    state: data.state,
-    zip: data.zip ?? "",
-    district: data.district,
-    phone: data.phone,
-    email: data.email,
-    website: data.website,
+    name: normalizeText(data.name),
+    pastorName: normalizeText(data.pastor_name),
+    pastorTitle: normalizeText(data.pastor_title),
+    address: normalizeText(data.address),
+    city: normalizeText(data.city),
+    state: normalizeText(data.state),
+    zip: normalizeText(data.zip),
+    district: normalizeText(data.district),
+    phone: normalizeText(data.phone) || undefined,
+    email: normalizeText(data.email) || undefined,
+    website: normalizeText(data.website) || undefined,
     status: data.status,
-    source: data.source ?? "Firestore",
+    source: normalizeText(data.source) || "Firestore",
     lastUpdated: normalizeDate(data.last_updated),
     location: data.location ?? { lat: 0, lng: 0 },
-    churchImageUrl: data.church_image_url,
-    pastorImageUrl: data.pastor_image_url,
-    logoImageUrl: data.logo_image_url,
-    serviceHours: data.service_hours ?? [],
-    onlineWorshipUrl: data.online_worship_url,
-    ministries: data.ministries ?? [],
-    notes: data.notes
+    churchImageUrl: normalizeText(data.church_image_url) || undefined,
+    pastorImageUrl: normalizeText(data.pastor_image_url) || undefined,
+    logoImageUrl: normalizeText(data.logo_image_url) || undefined,
+    serviceHours: normalizeStringArray(data.service_hours),
+    onlineWorshipUrl: normalizeText(data.online_worship_url) || undefined,
+    ministries: normalizeStringArray(data.ministries),
+    notes: normalizeText(data.notes) || undefined
   };
 }
 
@@ -228,28 +249,28 @@ function mapSubmissionDoc(doc: QueryDocumentSnapshot<FirestoreSubmission>, tenan
     status: data.status,
     createdAt: normalizeDate(data.created_at),
     data: {
-      name: data.data.name,
-      pastorName: data.data.pastor_name,
-      pastorTitle: data.data.pastor_title,
-      address: data.data.address,
-      city: data.data.city,
-      state: data.data.state,
-      zip: data.data.zip ?? "",
-      district: data.data.district,
-      phone: data.data.phone,
-      email: data.data.email,
-      website: data.data.website,
+      name: normalizeText(data.data.name),
+      pastorName: normalizeText(data.data.pastor_name),
+      pastorTitle: normalizeText(data.data.pastor_title),
+      address: normalizeText(data.data.address),
+      city: normalizeText(data.data.city),
+      state: normalizeText(data.data.state),
+      zip: normalizeText(data.data.zip),
+      district: normalizeText(data.data.district),
+      phone: normalizeText(data.data.phone) || undefined,
+      email: normalizeText(data.data.email) || undefined,
+      website: normalizeText(data.data.website) || undefined,
       status: data.data.status,
-      source: data.data.source ?? "Submission",
+      source: normalizeText(data.data.source) || "Submission",
       lastUpdated: normalizeDate(data.data.last_updated),
       location: data.data.location ?? { lat: 0, lng: 0 },
-      churchImageUrl: data.data.church_image_url,
-      pastorImageUrl: data.data.pastor_image_url,
-      logoImageUrl: data.data.logo_image_url,
-      serviceHours: data.data.service_hours ?? [],
-      onlineWorshipUrl: data.data.online_worship_url,
-      ministries: data.data.ministries ?? [],
-      notes: data.data.notes
+      churchImageUrl: normalizeText(data.data.church_image_url) || undefined,
+      pastorImageUrl: normalizeText(data.data.pastor_image_url) || undefined,
+      logoImageUrl: normalizeText(data.data.logo_image_url) || undefined,
+      serviceHours: normalizeStringArray(data.data.service_hours),
+      onlineWorshipUrl: normalizeText(data.data.online_worship_url) || undefined,
+      ministries: normalizeStringArray(data.data.ministries),
+      notes: normalizeText(data.data.notes) || undefined
     }
   };
 }

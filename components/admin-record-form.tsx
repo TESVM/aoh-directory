@@ -6,6 +6,14 @@ import { useFormStatus } from "react-dom";
 import { ActionResult } from "@/app/actions";
 import { Church, Submission, ViewerContext } from "@/lib/types";
 
+function toMultilineValue(value?: string[] | string) {
+  if (Array.isArray(value)) {
+    return value.join("\n");
+  }
+
+  return typeof value === "string" ? value : "";
+}
+
 type RecordValues = Pick<
   Church,
   | "name"
@@ -23,6 +31,7 @@ type RecordValues = Pick<
   | "pastorImageUrl"
   | "logoImageUrl"
   | "serviceHours"
+  | "ministries"
   | "onlineWorshipUrl"
   | "status"
   | "source"
@@ -128,10 +137,18 @@ export function AdminRecordForm({
         <TextArea
           label="Service hours"
           name="serviceHours"
-          defaultValue={(values.serviceHours || []).join("\n")}
+          defaultValue={toMultilineValue(values.serviceHours)}
           className="md:col-span-2"
           rows={4}
           helpText="Put each service time on its own line."
+        />
+        <TextArea
+          label="Ministry Groups"
+          name="ministries"
+          defaultValue={toMultilineValue(values.ministries)}
+          className="md:col-span-2"
+          rows={4}
+          helpText="Put each ministry group on its own line."
         />
         <div className="md:col-span-2 rounded-[1.5rem] border border-line/80 bg-sky/40 p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-700">Visuals</p>
@@ -143,8 +160,8 @@ export function AdminRecordForm({
           </div>
           <div className="mt-3 rounded-2xl border border-dashed border-line bg-white/80 px-4 py-3 text-sm leading-6 text-muted">
             <p className="font-semibold text-ink">Accepted upload files:</p>
-            <p>PNG, JPG, JPEG, WEBP, and GIF files work best for photos and logos.</p>
-            <p>If you have an SVG logo, paste the logo link in the field above instead of uploading the file.</p>
+            <p>PNG, JPG, JPEG, WEBP, GIF, AVIF, HEIC, HEIF, and SVG files are supported.</p>
+            <p>Keep each uploaded file at 4 MB or smaller.</p>
             <p className="mt-2">
               If upload still fails, the church can keep working by pasting image links until Firebase finishes linking the Storage bucket.
             </p>
@@ -263,7 +280,7 @@ function TextArea({
   helpText
 }: {
   label: string;
-  name: "notes" | "serviceHours";
+  name: "notes" | "serviceHours" | "ministries";
   defaultValue?: string;
   className?: string;
   rows?: number;
@@ -314,7 +331,7 @@ function ImageUploadField({
       <input
         name={name}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/avif,image/heic,image/heif,image/svg+xml,.heic,.heif,.avif,.svg"
         className="block w-full text-sm text-ink file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:font-semibold file:text-white"
       />
       {helpText ? <p className="text-xs text-muted">{helpText}</p> : null}

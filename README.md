@@ -158,6 +158,73 @@ Required Vercel env vars:
 - `FIREBASE_PRIVATE_KEY`
 - `SESSION_COOKIE_NAME`
 
+## Mobile App Packaging
+
+The app is now prepared for iPhone and Android packaging through Capacitor.
+
+Current mobile identity:
+
+- app name: `AOH Church of God Directory`
+- owner: `TECH AND SOLUTIONS`
+- website: `https://aohdirectory.com`
+- live Vercel app: `https://aoh-directory.vercel.app/aoh`
+- bundle id default: `com.techandsolutions.aohdirectory`
+
+Mobile art drop folder:
+
+- icon: `branding/mobile/app-icon-1024.png`
+- splash: `branding/mobile/splash-2732.png`
+
+Install command after those files exist:
+
+```bash
+./scripts/install-mobile-assets.sh
+```
+
+Why this route:
+
+- the current app uses Next.js server rendering and Firebase session auth
+- that makes a static mobile export a poor fit
+- Capacitor lets the native app shell load the deployed HTTPS site without rewriting the product in React Native
+
+Additional mobile env var:
+
+- `CAP_SERVER_URL`
+
+The mobile wrapper now defaults to `https://aoh-directory.vercel.app/aoh`.
+
+If you later switch the app over to the custom domain, set `CAP_SERVER_URL` before you sync native projects. Example:
+
+```bash
+CAP_SERVER_URL="https://aohdirectory.com/aoh" npm run mobile:sync
+```
+
+Initial native project setup:
+
+```bash
+cd /Users/tes/aoh-directory
+npm run mobile:add:ios
+npm run mobile:add:android
+CAP_SERVER_URL="https://your-live-domain.example" npm run mobile:sync
+```
+
+Open the native projects:
+
+```bash
+cd /Users/tes/aoh-directory
+npm run mobile:open:ios
+npm run mobile:open:android
+```
+
+Notes:
+
+- the current mobile wrapper points to `https://aoh-directory.vercel.app/aoh`
+- after the custom domain is live, run `CAP_SERVER_URL="https://aohdirectory.com/aoh" npm run mobile:sync`
+- the current bundle id is `com.techandsolutions.aohdirectory`
+- native app icons and splash screens still need platform assets prepared in Xcode and Android Studio
+- iOS publishing still requires your Apple Developer account and certificates
+- Android publishing still requires your Play Console account and signing key
+
 ## Publish Firestore Rules
 
 Use the Firebase CLI from the project root after you log into the correct Firebase account:

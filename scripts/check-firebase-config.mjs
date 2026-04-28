@@ -5,6 +5,8 @@ const requiredClient = [
   "NEXT_PUBLIC_FIREBASE_APP_ID"
 ];
 
+const requiredStorage = ["NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"];
+
 const requiredAdmin = [
   "FIREBASE_PROJECT_ID",
   "FIREBASE_CLIENT_EMAIL",
@@ -19,10 +21,16 @@ function checkSet(keys) {
 }
 
 const clientStatus = checkSet(requiredClient);
+const storageStatus = checkSet(requiredStorage);
 const adminStatus = checkSet(requiredAdmin);
 
 console.log("Firebase client env:");
 for (const item of clientStatus) {
+  console.log(`- ${item.key}: ${item.present ? "set" : "missing"}`);
+}
+
+console.log("\nFirebase storage env:");
+for (const item of storageStatus) {
   console.log(`- ${item.key}: ${item.present ? "set" : "missing"}`);
 }
 
@@ -31,7 +39,7 @@ for (const item of adminStatus) {
   console.log(`- ${item.key}: ${item.present ? "set" : "missing"}`);
 }
 
-const missing = [...clientStatus, ...adminStatus].filter((item) => !item.present);
+const missing = [...clientStatus, ...storageStatus, ...adminStatus].filter((item) => !item.present);
 if (missing.length) {
   console.error("\nFirebase configuration is incomplete.");
   process.exit(1);

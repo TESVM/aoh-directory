@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AOH Church of God Directory</string>
+    <string name="title_activity_main">AOH Church of God Directory</string>
+    <string name="package_name">com.techandsolutions.aohdirectory</string>
+    <string name="custom_url_scheme">com.techandsolutions.aohdirectory</string>
+</resources>

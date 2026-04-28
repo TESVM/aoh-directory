@@ -20,7 +20,7 @@ export default async function LoginPage({
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-700">Firebase Auth</p>
           <div className="mt-4 flex h-32 w-32 items-center justify-center rounded-[1.6rem] border border-line/80 bg-surface p-4 shadow-card">
             <img
-              src="/aoh-logo.svg"
+              src="/aoh-directory-badge.png"
               alt="AOH Church of God logo"
               className="h-full w-full object-contain"
             />

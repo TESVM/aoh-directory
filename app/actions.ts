@@ -51,6 +51,7 @@ type SubmissionPayload = {
   phone: string;
   email: string;
   website: string;
+  ministries: string[];
 };
 
 type ChurchPayload = SubmissionPayload & {
@@ -81,6 +82,28 @@ type ChurchClaimPayload = {
   claimantPhone?: string;
   roleAtChurch: string;
   verificationNotes: string;
+};
+
+const MAX_IMAGE_UPLOAD_BYTES = 4 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+  "image/heic",
+  "image/heif",
+  "image/svg+xml"
+]);
+const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+  "image/svg+xml": "svg"
 };
 
 function normalizePhoneNumber(phone?: string) {
@@ -137,6 +160,7 @@ function readChurchPayload(formData: FormData): ChurchPayload {
     phone: String(formData.get("phone") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     website: String(formData.get("website") || "").trim(),
+    ministries: parseMultilineList(formData.get("ministries")),
     churchImageUrl: String(formData.get("churchImageUrl") || "").trim() || undefined,
     pastorImageUrl: String(formData.get("pastorImageUrl") || "").trim() || undefined,
     logoImageUrl: String(formData.get("logoImageUrl") || "").trim() || undefined,
@@ -182,18 +206,29 @@ async function uploadImageIfProvided(
     return null;
   }
 
-  if (!entry.type.startsWith("image/")) {
-    return null;
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(entry.type)) {
+    throw new Error(
+      "Unsupported image format. Use PNG, JPG, JPEG, WEBP, GIF, AVIF, HEIC, HEIF, or SVG."
+    );
+  }
+
+  if (entry.size > MAX_IMAGE_UPLOAD_BYTES) {
+    throw new Error("Image upload failed. Files must be 4 MB or smaller.");
   }
 
   const bucket = getFirebaseAdminBucket();
   if (!bucket) {
     console.error("Firebase Storage is not configured for upload.");
-    return null;
+    throw new Error(
+      "Image upload is not configured yet. Set the Firebase Storage bucket env var before uploading files."
+    );
   }
 
-  const extension = entry.name.includes(".") ? entry.name.split(".").pop()?.toLowerCase() : null;
-  const safeExtension = extension && /^[a-z0-9]+$/i.test(extension) ? extension : "jpg";
+  const extensionFromName = entry.name.includes(".") ? entry.name.split(".").pop()?.toLowerCase() : null;
+  const safeExtension =
+    (extensionFromName && /^[a-z0-9]+$/i.test(extensionFromName) ? extensionFromName : null) ||
+    EXTENSION_BY_MIME_TYPE[entry.type] ||
+    "jpg";
   const objectPath = `${storagePath}.${safeExtension}`;
   const file = bucket.file(objectPath);
   const buffer = Buffer.from(await entry.arrayBuffer());
@@ -225,7 +260,19 @@ async function uploadImageIfProvided(
       );
     }
 
-    throw new Error("Image upload failed. Try a PNG, JPG, JPEG, WEBP, or GIF file, or use the image link field instead.");
+    if (
+      errorText.toLowerCase().includes("permission") ||
+      errorText.toLowerCase().includes("forbidden") ||
+      errorText.includes('"code": 403')
+    ) {
+      throw new Error(
+        "Image upload failed because the Firebase service account cannot write to Storage. Check the bucket permissions for this project."
+      );
+    }
+
+    throw new Error(
+      "Image upload failed. Try PNG, JPG, JPEG, WEBP, GIF, AVIF, HEIC, HEIF, or SVG, or use the image link field instead."
+    );
   }
 
   return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
@@ -288,7 +335,7 @@ export async function submitChurchSubmissionAction(
         logo_image_url: "",
         service_hours: [],
         online_worship_url: "",
-        ministries: []
+        ministries: payload.ministries
       }
     });
 
@@ -455,7 +502,7 @@ export async function updateChurchAction(formData: FormData): Promise<ActionResu
         notes: payload.notes,
         last_updated: new Date().toISOString().slice(0, 10),
         location: currentChurch.location,
-        ministries: currentChurch.ministries || []
+        ministries: payload.ministries
       },
       { merge: true }
     );
@@ -613,7 +660,7 @@ export async function updateSubmissionAction(formData: FormData): Promise<Action
         notes: payload.notes,
         last_updated: new Date().toISOString().slice(0, 10),
         location: currentSubmission.data.location,
-        ministries: currentSubmission.data.ministries
+        ministries: payload.ministries
       }
     });
 
