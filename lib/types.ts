@@ -1,11 +1,17 @@
 export type VerificationStatus = "verified" | "pending" | "submitted";
 export type ViewerRole = "admin" | "overseer" | "bishop" | "pastor" | "public";
+export type ReportingQuarter = "Q1" | "Q2" | "Q3" | "Q4";
+export type QuarterlyReportStatus = "draft" | "submitted" | "reviewed";
 
 export type Tenant = {
   id: string;
   name: string;
   slug: string;
   tagline: string;
+  heroEyebrow?: string;
+  heroTitle?: string;
+  heroDescription?: string;
+  showDistricts?: boolean;
   branding: {
     color: string;
     accent: string;
@@ -27,6 +33,7 @@ export type Church = {
   phone?: string;
   email?: string;
   website?: string;
+  pastorMessengerUrl?: string;
   status: VerificationStatus;
   source: string;
   lastUpdated: string;
@@ -98,4 +105,69 @@ export type ViewerContext = {
   district?: string;
   churchId?: string;
   user?: UserRecord;
+};
+
+export type QuarterlyReport = {
+  id: string;
+  tenantId: string;
+  churchId: string;
+  churchName: string;
+  district: string;
+  pastorName: string;
+  quarter: ReportingQuarter;
+  year: number;
+  status: QuarterlyReportStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedByName?: string;
+  notes?: string;
+  pastorReport: {
+    attendanceTotals: {
+      totalAttendance: number;
+      sundaySchool: number;
+      poor: number;
+      youth: number;
+      bibleStudy: number;
+      mothers: number;
+      missionaries: number;
+      specialEfforts: number;
+      deacons: number;
+      womensDepartment: number;
+      choir: number;
+    };
+    receipts: {
+      buildingFund: number;
+      offering: number;
+      tithes: number;
+      bishopsTithes: number;
+      visitingChurchFund: number;
+      taxes: number;
+      pastorTithes: number;
+      churchTithes: number;
+      generalFund: number;
+    };
+    disbursements: {
+      quarterly: number;
+      taxes: number;
+      pastorAide: number;
+      sundaySchool: number;
+      poor: number;
+      mothers: number;
+      missionaries: number;
+      deacons: number;
+      youth: number;
+      buildingFund: number;
+      loveOffering: number;
+    };
+    districtRemittance: {
+      reportedToDistrict: number;
+      pastorTithesReported: number;
+      publication: number;
+      disasterRelief: number;
+      publicOffering: number;
+      quarterlyMeetingTotal: number;
+      overseerSupport: number;
+      assistantOverseerSupport: number;
+    };
+  };
 };
