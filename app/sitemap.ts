@@ -1,6 +1,15 @@
 import type { MetadataRoute } from "next";
 import { getChurchesByTenant, getTenants } from "@/lib/data";
 
+function toValidLastModified(value?: string) {
+  if (!value) {
+    return new Date();
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.aohdirectory.com";
   const tenants = await getTenants();
@@ -16,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         ...churches.map((church) => ({
           url: `${baseUrl}/${tenant.slug}/church/${church.id}`,
-          lastModified: church.lastUpdated ? new Date(church.lastUpdated) : new Date()
+          lastModified: toValidLastModified(church.lastUpdated)
         })),
         ...districts.map((district) => ({
           url: `${baseUrl}/${tenant.slug}/district/${district}`,
