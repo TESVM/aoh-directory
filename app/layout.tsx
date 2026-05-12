@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.aohdirectory.com"),
   title: "AOH Church of God Directory",
   description:
     "Church directory app for members, visitors, pastors, leaders, and families to find Apostolic Overcoming Holy Church of God, Inc. churches.",
@@ -20,8 +21,12 @@ export const metadata: Metadata = {
     icon: "/aoh-directory-badge.png",
     apple: "/aoh-directory-badge.png"
   },
-  alternates: {
-    canonical: "https://aohdirectory.com"
+  openGraph: {
+    type: "website",
+    title: "AOH Church of God Directory",
+    description:
+      "Find Apostolic Overcoming Holy Church of God, Inc. churches, service information, and contact details.",
+    siteName: "AOH Church of God Directory"
   }
 };
 

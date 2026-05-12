@@ -1,8 +1,41 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { getDistrictStats, getTenantBySlug } from "@/lib/data";
+import { buildDistrictUrl } from "@/lib/seo";
 import { badgeTone } from "@/lib/utils";
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ tenant: string; districtId: string }>;
+}): Promise<Metadata> {
+  const { tenant: tenantSlug, districtId } = await params;
+  const tenant = await getTenantBySlug(tenantSlug);
+
+  if (!tenant) {
+    return {};
+  }
+
+  const title = `District ${districtId} | ${tenant.branding.logoText}`;
+  const description = `Browse churches and verification details for District ${districtId} in ${tenant.name}.`;
+  const url = buildDistrictUrl(tenant.slug, districtId);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website"
+    }
+  };
+}
 
 export default async function DistrictPage({
   params

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -7,11 +8,44 @@ import { ScrollToTopOnMount } from "@/components/scroll-to-top-on-mount";
 import { ShareChurchButton } from "@/components/share-church-button";
 import { SiteHeader } from "@/components/site-header";
 import { getChurchByTenantAndId, getTenantBySlug } from "@/lib/data";
+import { buildChurchDescription, buildChurchTitle, buildChurchUrl } from "@/lib/seo";
 import { badgeTone, formatPhone, formatWebsite, toMailtoHref, toTelHref, toWebsiteHref } from "@/lib/utils";
 
 function buildGoogleMapsDirectionsUrl(address: string, city: string, state: string, zip: string) {
   const destination = [address, `${city}, ${state} ${zip}`].filter(Boolean).join(", ");
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ tenant: string; id: string }>;
+}): Promise<Metadata> {
+  const { tenant: tenantSlug, id } = await params;
+  const tenant = await getTenantBySlug(tenantSlug);
+  const church = await getChurchByTenantAndId(tenantSlug, id);
+
+  if (!tenant || !church) {
+    return {};
+  }
+
+  const title = buildChurchTitle(church, tenant);
+  const description = buildChurchDescription(church, tenant);
+  const url = buildChurchUrl(tenant.slug, church.id);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "article"
+    }
+  };
 }
 
 export default async function ChurchProfilePage({
@@ -30,9 +64,34 @@ export default async function ChurchProfilePage({
   const directionsUrl = buildGoogleMapsDirectionsUrl(church.address, church.city, church.state, church.zip);
   const publicProfileUrl = `/${tenant.slug}/church/${church.id}`;
   const pastorLine = [church.pastorTitle, church.pastorName].filter(Boolean).join(" ") || "Leadership details pending";
+  const showDistricts = tenant.showDistricts !== false;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Church",
+    name: church.name,
+    url: buildChurchUrl(tenant.slug, church.id),
+    address: church.address
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: church.address,
+          addressLocality: church.city,
+          addressRegion: church.state,
+          postalCode: church.zip
+        }
+      : undefined,
+    telephone: church.phone || undefined,
+    email: church.email || undefined,
+    image: church.churchImageUrl || church.logoImageUrl || undefined,
+    sameAs: [church.website, church.onlineWorshipUrl, church.pastorMessengerUrl].filter(Boolean),
+    areaServed: church.district ? `District ${church.district}` : undefined
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ScrollToTopOnMount />
       <SiteHeader tenant={tenant} />
       <main id="main-content" className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-8 lg:px-8">
@@ -44,7 +103,7 @@ export default async function ChurchProfilePage({
                   <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${badgeTone(church.status)}`}>
                     {church.status}
                   </span>
-                  {church.district ? (
+                  {showDistricts && church.district ? (
                     <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
                       District {church.district}
                     </span>
@@ -73,7 +132,7 @@ export default async function ChurchProfilePage({
                   <Link href={`/${tenant.slug}`} className="flex min-h-10 items-center justify-center rounded-full border border-white/15 px-3 py-2 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:min-h-11 sm:w-auto sm:px-5 sm:py-3">
                     Back To Directory
                   </Link>
-                  {church.district ? (
+                  {showDistricts && church.district ? (
                     <Link href={`/${tenant.slug}/district/${church.district}`} className="flex min-h-10 items-center justify-center rounded-full bg-brand-500 px-3 py-2 text-center text-sm font-semibold text-pine sm:min-h-11 sm:w-auto sm:px-5 sm:py-3">
                       District Dashboard
                     </Link>
@@ -102,6 +161,16 @@ export default async function ChurchProfilePage({
                       className="flex min-h-10 items-center justify-center rounded-full border border-white/15 px-3 py-2 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:min-h-11 sm:w-auto sm:px-5 sm:py-3"
                     >
                       Visit Website
+                    </a>
+                  ) : null}
+                  {toWebsiteHref(church.pastorMessengerUrl) ? (
+                    <a
+                      href={toWebsiteHref(church.pastorMessengerUrl) || undefined}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex min-h-10 items-center justify-center rounded-full border border-white/15 px-3 py-2 text-center text-sm font-semibold text-white transition hover:border-brand-100 sm:min-h-11 sm:w-auto sm:px-5 sm:py-3"
+                    >
+                      Pastor Messenger App
                     </a>
                   ) : null}
                   <div className="col-span-2 text-ink sm:col-auto">
@@ -180,6 +249,19 @@ export default async function ChurchProfilePage({
                   </a>
                 ) : (
                   <p>{formatWebsite(church.website)}</p>
+                )}
+                {toWebsiteHref(church.pastorMessengerUrl) ? (
+                  <a
+                    href={toWebsiteHref(church.pastorMessengerUrl) || undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-2xl border border-line bg-white px-4 py-3 transition hover:border-brand-500 hover:text-brand-700"
+                  >
+                    <p className="text-sm font-medium text-brand-700">Pastor Messenger App</p>
+                    <p>{formatWebsite(church.pastorMessengerUrl)}</p>
+                  </a>
+                ) : (
+                  <p>{formatWebsite(church.pastorMessengerUrl)}</p>
                 )}
               </ProfileCard>
 
